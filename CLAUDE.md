@@ -28,21 +28,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## 常用命令
 
 ```bash
+# 安装依赖
+bun install
+
 # 开发
-npm run dev
+bun run dev
 
 # 构建（先 TypeScript 检查，再 Vite 构建）
-npm run build
+bun run build
 
 # ESLint 检查
-npm run lint
+bun run lint
 
 # 预览构建产物
-npm run preview
+bun run preview
 ```
 
 ## 技术栈
 
+- **包管理器**: Bun
 - **构建工具**: Vite 6
 - **UI 框架**: React 18 + TypeScript 5.7
 - **表单处理**: react-hook-form + zod（校验）+ @hookform/resolvers

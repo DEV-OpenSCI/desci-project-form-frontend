@@ -5,6 +5,7 @@
 ## 技术栈
 
 - **框架**: React 18 + TypeScript 5.7 + Vite 6
+- **包管理器**: Bun
 - **表单**: react-hook-form + Zod
 - **样式**: Tailwind CSS 3
 - **UI 组件**: Radix UI + shadcn/ui
@@ -15,7 +16,7 @@
 ### 1. 安装依赖
 
 ```bash
-npm install --legacy-peer-deps
+bun install
 ```
 
 ### 2. 环境变量配置
@@ -29,16 +30,16 @@ VITE_API_BASE_URL=https://testogapi.opensci.io/account
 ### 3. 启动开发服务器
 
 ```bash
-npm run dev
+bun run dev
 ```
 
-访问 http://localhost:5173
+访问 http://localhost:5173（支持内网 IP 访问）
 
 ### 4. 构建生产版本
 
 ```bash
-npm run build
-npm run preview  # 预览构建结果
+bun run build
+bun run preview  # 预览构建结果
 ```
 
 ## 功能特性
