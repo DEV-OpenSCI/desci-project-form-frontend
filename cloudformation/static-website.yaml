@@ -1,0 +1,105 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFront distribution for DeSci Project Form frontend
+
+Parameters:
+  Environment:
+    Type: String
+    AllowedValues:
+      - test
+      - staging
+      - production
+    Description: Deployment environment
+
+  S3BucketName:
+    Type: String
+    Default: sci-io-storage
+    Description: Existing S3 bucket name for static files
+
+  S3BucketRegion:
+    Type: String
+    Default: ap-southeast-1
+    Description: Region of the S3 bucket
+
+Resources:
+  CloudFrontOAC:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub 'desci-form-${Environment}-oac'
+        Description: !Sub 'OAC for DeSci Form ${Environment} environment'
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Comment: !Sub 'DeSci Project Form - ${Environment}'
+        Enabled: true
+        HttpVersion: http2and3
+        DefaultRootObject: index.html
+        PriceClass: PriceClass_All
+
+        Origins:
+          - Id: S3Origin
+            DomainName: !Sub '${S3BucketName}.s3.${S3BucketRegion}.amazonaws.com'
+            OriginPath: !Sub '/frontend/${Environment}'
+            S3OriginConfig:
+              OriginAccessIdentity: ''
+            OriginAccessControlId: !GetAtt CloudFrontOAC.Id
+
+        DefaultCacheBehavior:
+          TargetOriginId: S3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          CachedMethods:
+            - GET
+            - HEAD
+          Compress: true
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6  # CachingOptimized
+          OriginRequestPolicyId: 88a5eaf4-2fd4-4709-b370-b4c650ea3fcf  # CORS-S3Origin
+
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+            ErrorCachingMinTTL: 10
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+            ErrorCachingMinTTL: 10
+
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: desci-form
+
+Outputs:
+  CloudFrontDomainName:
+    Description: CloudFront distribution domain name
+    Value: !GetAtt CloudFrontDistribution.DomainName
+    Export:
+      Name: !Sub '${AWS::StackName}-DomainName'
+
+  CloudFrontDistributionId:
+    Description: CloudFront distribution ID
+    Value: !Ref CloudFrontDistribution
+    Export:
+      Name: !Sub '${AWS::StackName}-DistributionId'
+
+  CloudFrontDistributionArn:
+    Description: CloudFront distribution ARN
+    Value: !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}'
+    Export:
+      Name: !Sub '${AWS::StackName}-DistributionArn'
+
+  S3PathPrefix:
+    Description: S3 path prefix for this environment
+    Value: !Sub 's3://${S3BucketName}/frontend/${Environment}/'
+    Export:
+      Name: !Sub '${AWS::StackName}-S3Path'

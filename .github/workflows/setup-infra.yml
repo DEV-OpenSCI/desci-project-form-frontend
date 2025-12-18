@@ -1,0 +1,117 @@
+name: Setup Infrastructure
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        type: choice
+        options:
+          - test
+          - staging
+          - production
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+
+jobs:
+  deploy-infrastructure:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Validate CloudFormation template
+        run: |
+          aws cloudformation validate-template \
+            --template-body file://cloudformation/static-website.yaml
+
+      - name: Deploy CloudFormation stack
+        run: |
+          STACK_NAME="desci-form-${{ inputs.environment }}"
+
+          # Check if stack exists
+          if aws cloudformation describe-stacks --stack-name $STACK_NAME 2>/dev/null; then
+            echo "Updating existing stack: $STACK_NAME"
+            aws cloudformation update-stack \
+              --stack-name $STACK_NAME \
+              --template-body file://cloudformation/static-website.yaml \
+              --parameters \
+                ParameterKey=Environment,ParameterValue=${{ inputs.environment }} \
+                ParameterKey=S3BucketName,ParameterValue=sci-io-storage \
+                ParameterKey=S3BucketRegion,ParameterValue=${{ env.AWS_REGION }} \
+              --capabilities CAPABILITY_IAM \
+              --tags Key=Environment,Value=${{ inputs.environment }} Key=Project,Value=desci-form \
+              || echo "No updates to perform"
+          else
+            echo "Creating new stack: $STACK_NAME"
+            aws cloudformation create-stack \
+              --stack-name $STACK_NAME \
+              --template-body file://cloudformation/static-website.yaml \
+              --parameters \
+                ParameterKey=Environment,ParameterValue=${{ inputs.environment }} \
+                ParameterKey=S3BucketName,ParameterValue=sci-io-storage \
+                ParameterKey=S3BucketRegion,ParameterValue=${{ env.AWS_REGION }} \
+              --capabilities CAPABILITY_IAM \
+              --tags Key=Environment,Value=${{ inputs.environment }} Key=Project,Value=desci-form
+          fi
+
+      - name: Wait for stack operation to complete
+        run: |
+          STACK_NAME="desci-form-${{ inputs.environment }}"
+          echo "Waiting for stack operation to complete..."
+          aws cloudformation wait stack-create-complete --stack-name $STACK_NAME 2>/dev/null || \
+          aws cloudformation wait stack-update-complete --stack-name $STACK_NAME 2>/dev/null || \
+          echo "Stack operation completed or no changes"
+
+      - name: Get stack outputs
+        run: |
+          STACK_NAME="desci-form-${{ inputs.environment }}"
+          echo "Stack outputs:"
+          aws cloudformation describe-stacks \
+            --stack-name $STACK_NAME \
+            --query 'Stacks[0].Outputs' \
+            --output table
+
+      - name: Print S3 Bucket Policy instructions
+        run: |
+          STACK_NAME="desci-form-${{ inputs.environment }}"
+          DISTRIBUTION_ARN=$(aws cloudformation describe-stacks \
+            --stack-name $STACK_NAME \
+            --query 'Stacks[0].Outputs[?OutputKey==`CloudFrontDistributionArn`].OutputValue' \
+            --output text)
+
+          echo ""
+          echo "=============================================="
+          echo "IMPORTANT: S3 Bucket Policy Configuration"
+          echo "=============================================="
+          echo ""
+          echo "Add the following statement to your S3 bucket policy for 'sci-io-storage':"
+          echo ""
+          echo '{'
+          echo '    "Sid": "AllowCloudFront'${{ inputs.environment }}'",'
+          echo '    "Effect": "Allow",'
+          echo '    "Principal": {'
+          echo '        "Service": "cloudfront.amazonaws.com"'
+          echo '    },'
+          echo '    "Action": "s3:GetObject",'
+          echo '    "Resource": "arn:aws:s3:::sci-io-storage/frontend/${{ inputs.environment }}/*",'
+          echo '    "Condition": {'
+          echo '        "StringEquals": {'
+          echo '            "AWS:SourceArn": "'$DISTRIBUTION_ARN'"'
+          echo '        }'
+          echo '    }'
+          echo '}'
+          echo ""

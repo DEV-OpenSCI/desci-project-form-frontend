@@ -1,0 +1,113 @@
+name: Deploy Application
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        type: choice
+        options:
+          - test
+          - staging
+          - production
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  S3_BUCKET: sci-io-storage
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build application
+        run: bun run build
+        env:
+          NODE_ENV: production
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Sync to S3
+        run: |
+          S3_PATH="s3://${{ env.S3_BUCKET }}/frontend/${{ inputs.environment }}/"
+          echo "Deploying to: $S3_PATH"
+
+          aws s3 sync dist/ $S3_PATH \
+            --delete \
+            --cache-control "public, max-age=31536000, immutable" \
+            --exclude "index.html" \
+            --exclude "*.json"
+
+          # Upload index.html and JSON files with no-cache
+          aws s3 cp dist/index.html $S3_PATH \
+            --cache-control "no-cache, no-store, must-revalidate"
+
+          # Upload any JSON files with no-cache
+          if ls dist/*.json 1> /dev/null 2>&1; then
+            for file in dist/*.json; do
+              aws s3 cp "$file" "$S3_PATH$(basename $file)" \
+                --cache-control "no-cache, no-store, must-revalidate"
+            done
+          fi
+
+      - name: Get CloudFront Distribution ID
+        id: get-distribution
+        run: |
+          STACK_NAME="desci-form-${{ inputs.environment }}"
+          DISTRIBUTION_ID=$(aws cloudformation describe-stacks \
+            --stack-name $STACK_NAME \
+            --query 'Stacks[0].Outputs[?OutputKey==`CloudFrontDistributionId`].OutputValue' \
+            --output text)
+          echo "distribution_id=$DISTRIBUTION_ID" >> $GITHUB_OUTPUT
+          echo "CloudFront Distribution ID: $DISTRIBUTION_ID"
+
+      - name: Invalidate CloudFront cache
+        run: |
+          DISTRIBUTION_ID="${{ steps.get-distribution.outputs.distribution_id }}"
+          if [ -n "$DISTRIBUTION_ID" ]; then
+            echo "Invalidating CloudFront cache for distribution: $DISTRIBUTION_ID"
+            aws cloudfront create-invalidation \
+              --distribution-id $DISTRIBUTION_ID \
+              --paths "/*"
+          else
+            echo "Warning: Could not find CloudFront distribution ID"
+          fi
+
+      - name: Get deployment URL
+        run: |
+          STACK_NAME="desci-form-${{ inputs.environment }}"
+          DOMAIN=$(aws cloudformation describe-stacks \
+            --stack-name $STACK_NAME \
+            --query 'Stacks[0].Outputs[?OutputKey==`CloudFrontDomainName`].OutputValue' \
+            --output text)
+          echo ""
+          echo "=============================================="
+          echo "Deployment completed!"
+          echo "=============================================="
+          echo ""
+          echo "Environment: ${{ inputs.environment }}"
+          echo "URL: https://$DOMAIN"
+          echo "API: ${{ vars.VITE_API_BASE_URL }}"
+          echo ""

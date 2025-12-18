@@ -169,6 +169,27 @@ src/
 4. 表单提交时 → 自动携带填写码
 5. 提交成功 → 清除填写码 → 显示申请编号
 
+## 部署
+
+项目支持部署到 AWS（S3 + CloudFront），使用 GitHub Actions 实现 CI/CD。
+
+### 环境
+
+| 环境 | 说明 |
+|------|------|
+| test | 开发测试环境 |
+| staging | 预发布环境 |
+| production | 生产环境 |
+
+### 部署方式
+
+1. 进入 GitHub Actions
+2. 选择 **Deploy Application** 工作流
+3. 选择目标环境
+4. 执行部署
+
+详细部署指南请参考 [docs/deployment.md](docs/deployment.md)。
+
 ## License
 
 MIT
