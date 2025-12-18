@@ -25,6 +25,21 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     steps:
+      - name: Set deployment URL
+        id: set-url
+        run: |
+          case "${{ inputs.environment }}" in
+            test)
+              echo "url=https://test-projectform.opensci.io" >> $GITHUB_OUTPUT
+              ;;
+            staging)
+              echo "url=https://staging-projectform.opensci.io" >> $GITHUB_OUTPUT
+              ;;
+            production)
+              echo "url=https://projectform.opensci.io" >> $GITHUB_OUTPUT
+              ;;
+          esac
+
       - name: Notify Lark on start
         run: |
           curl -X POST "${{ secrets.LARK_WEBHOOK_URL }}" \
@@ -77,6 +92,13 @@ jobs:
                         }
                       }
                     ]
+                  },
+                  {
+                    "tag": "div",
+                    "text": {
+                      "tag": "lark_md",
+                      "content": "**访问地址**\n${{ steps.set-url.outputs.url }}"
+                    }
                   },
                   {
                     "tag": "action",
@@ -151,14 +173,8 @@ jobs:
             --stack-name $STACK_NAME \
             --query 'Stacks[0].Outputs[?OutputKey==`CloudFrontDistributionId`].OutputValue' \
             --output text)
-          DOMAIN=$(aws cloudformation describe-stacks \
-            --stack-name $STACK_NAME \
-            --query 'Stacks[0].Outputs[?OutputKey==`CloudFrontDomainName`].OutputValue' \
-            --output text)
           echo "distribution_id=$DISTRIBUTION_ID" >> $GITHUB_OUTPUT
-          echo "domain=$DOMAIN" >> $GITHUB_OUTPUT
           echo "CloudFront Distribution ID: $DISTRIBUTION_ID"
-          echo "CloudFront Domain: $DOMAIN"
 
       - name: Invalidate CloudFront cache
         run: |
@@ -173,7 +189,6 @@ jobs:
           fi
 
       - name: Get deployment info
-        id: deploy-info
         run: |
           echo ""
           echo "=============================================="
@@ -181,7 +196,7 @@ jobs:
           echo "=============================================="
           echo ""
           echo "Environment: ${{ inputs.environment }}"
-          echo "URL: https://${{ steps.get-distribution.outputs.domain }}"
+          echo "URL: ${{ steps.set-url.outputs.url }}"
           echo "API: ${{ vars.VITE_API_BASE_URL }}"
           echo ""
 
@@ -243,7 +258,7 @@ jobs:
                     "tag": "div",
                     "text": {
                       "tag": "lark_md",
-                      "content": "**访问地址**\nhttps://${{ steps.get-distribution.outputs.domain }}"
+                      "content": "**访问地址**\n${{ steps.set-url.outputs.url }}"
                     }
                   },
                   {
