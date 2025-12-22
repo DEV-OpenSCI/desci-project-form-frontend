@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { UseFormReturn, useFieldArray } from 'react-hook-form'
 import { Plus, Trash2, X, Check, Loader2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/components/ui/toast'
@@ -13,10 +12,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
-import { TITLES, EDUCATIONS, MEMBER_ROLES } from '@/lib/constants'
+import { FieldLabel } from '@/components/form/FieldLabel'
+import { FieldError } from '@/components/form/FieldError'
+import { FormSection } from '@/components/form/FormSection'
+
 import type { ProjectFormData } from '@/types/form'
+import { TITLES, EDUCATIONS, MEMBER_ROLES } from '@/lib/constants'
 import { uploadResume } from '@/services/fileApi'
 
 interface TeamSectionProps {
@@ -104,34 +105,27 @@ export function TeamSection({ form }: TeamSectionProps) {
   return (
     <>
       <ToastContainer />
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl">项目组成员信息</CardTitle>
-          <CardDescription>填写项目负责人和其他成员信息</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-8">
-          {/* 项目负责人信息 */}
-          <div className="space-y-6">
-            <h3 className="font-semibold text-lg border-l-4 border-primary pl-3">项目负责人</h3>
+      <FormSection title="项目组成员信息" description="填写项目负责人和其他成员信息">
+        {/* 项目负责人信息 */}
+        <div className="space-y-8">
+          <h3 className="font-semibold text-lg">项目负责人</h3>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-8 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="leader.name">
-                姓名 <span className="text-destructive">*</span>
-              </Label>
+              <FieldLabel htmlFor="leader.name" required>
+                姓名
+              </FieldLabel>
               <Input
                 id="leader.name"
                 placeholder="请输入姓名"
                 {...register('leader.name')}
               />
-              {errors.leader?.name && (
-                <p className="text-sm text-destructive">{errors.leader.name.message}</p>
-              )}
+              <FieldError message={errors.leader?.name?.message} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="leader.orcid">
-                ORCID <span className="text-muted-foreground text-xs">（选填）</span>
-              </Label>
+              <FieldLabel htmlFor="leader.orcid" optionalHint="（选填）">
+                ORCID
+              </FieldLabel>
               <Input
                 id="leader.orcid"
                 placeholder="请输入 ORCID"
@@ -140,30 +134,26 @@ export function TeamSection({ form }: TeamSectionProps) {
             </div>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-8 md:grid-cols-3">
             <div className="space-y-2">
-              <Label htmlFor="leader.email">
-                联系邮箱 <span className="text-destructive">*</span>
-              </Label>
+              <FieldLabel htmlFor="leader.email" required>
+                联系邮箱
+              </FieldLabel>
               <Input
                 id="leader.email"
                 type="email"
                 placeholder="请输入邮箱"
                 {...register('leader.email')}
               />
-              {errors.leader?.email && (
-                <p className="text-sm text-destructive">{errors.leader.email.message}</p>
-              )}
+              <FieldError message={errors.leader?.email?.message} />
             </div>
             <div className="space-y-2">
-              <Label>
-                职称 <span className="text-destructive">*</span>
-              </Label>
+              <FieldLabel required>职称</FieldLabel>
               <Select
                 value={watch('leader.title')}
                 onValueChange={(value) => setValue('leader.title', value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className={!watch('leader.title') ? "text-muted-foreground" : ""}>
                   <SelectValue placeholder="请选择职称" />
                 </SelectTrigger>
                 <SelectContent>
@@ -174,19 +164,15 @@ export function TeamSection({ form }: TeamSectionProps) {
                   ))}
                 </SelectContent>
               </Select>
-              {errors.leader?.title && (
-                <p className="text-sm text-destructive">{errors.leader.title.message}</p>
-              )}
+              <FieldError message={errors.leader?.title?.message} />
             </div>
             <div className="space-y-2">
-              <Label>
-                学历 <span className="text-destructive">*</span>
-              </Label>
+              <FieldLabel required>学历</FieldLabel>
               <Select
                 value={watch('leader.education')}
                 onValueChange={(value) => setValue('leader.education', value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className={!watch('leader.education') ? "text-muted-foreground" : ""}>
                   <SelectValue placeholder="请选择学历" />
                 </SelectTrigger>
                 <SelectContent>
@@ -197,16 +183,14 @@ export function TeamSection({ form }: TeamSectionProps) {
                   ))}
                 </SelectContent>
               </Select>
-              {errors.leader?.education && (
-                <p className="text-sm text-destructive">{errors.leader.education.message}</p>
-              )}
+              <FieldError message={errors.leader?.education?.message} />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="leader.bio">
-              简介 <span className="text-muted-foreground text-xs">（选填，限200字符）</span>
-            </Label>
+            <FieldLabel htmlFor="leader.bio" optionalHint="（选填，限200字符）">
+              简介
+            </FieldLabel>
             <Textarea
               id="leader.bio"
               placeholder="请简要描述项目主要负责人的主要研究方向、科研/项目成果（如代表性论文/专利）、项目经验（如已获得基金、项目等）等及在项目中承担的任务"
@@ -217,58 +201,54 @@ export function TeamSection({ form }: TeamSectionProps) {
             <p className="text-xs text-muted-foreground text-right">
               {watch('leader.bio')?.length || 0}/200
             </p>
-            {errors.leader?.bio && (
-              <p className="text-sm text-destructive">{errors.leader.bio.message}</p>
-            )}
+            <FieldError message={errors.leader?.bio?.message} />
           </div>
         </div>
 
-        <Separator />
+
 
         {/* 其他成员信息 */}
-        <div className="space-y-6">
+        <div className="space-y-8">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-lg border-l-4 border-primary pl-3">其他成员</h3>
-            <Button type="button" variant="outline" size="sm" onClick={addMember}>
+            <h3 className="font-semibold text-lg">其他成员</h3>
+            <Button type="button" variant="outline" size="sm" onClick={addMember} className="rounded-full">
               <Plus className="h-4 w-4 mr-1" />
               添加成员
             </Button>
           </div>
 
-          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
+          <div className="p-3 bg-blue-700/10 border border-blue-700/30 rounded text-sm text-blue-700">
             <span className="font-medium">简历说明：</span>描述曾参与的相关项目经验或背景，及简要描述在项目中承担的任务
           </div>
 
           {fields.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground border border-dashed rounded-lg">
+            <div className="text-center py-8 text-muted-foreground border border-dashed border-border rounded">
               暂无其他成员，点击上方按钮添加
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-8">
               {fields.map((field, index) => (
-                <div key={field.id} className="p-4 border rounded-lg space-y-4 bg-muted/30">
+                <div key={field.id} className="p-6 border border-border rounded-sm space-y-8 bg-background/50 hover:bg-muted/30 transition-colors">
                   <div className="flex items-center justify-between">
-                    <span className="font-medium">成员 {index + 1}</span>
+                    <span className="font-medium font-mono">Member {index + 1}</span>
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
                       onClick={() => remove(index)}
-                      className="text-destructive hover:text-destructive"
+                      className="text-destructive hover:text-destructive rounded-full"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
-                  <div className="grid gap-4 md:grid-cols-2">
+                  <div className="grid gap-8 md:grid-cols-2">
                     <div className="space-y-2">
-                      <Label>
-                        角色 <span className="text-destructive">*</span>
-                      </Label>
+                      <FieldLabel required>角色</FieldLabel>
                       <Select
                         value={watch(`members.${index}.role`)}
                         onValueChange={(value) => setValue(`members.${index}.role`, value)}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className={!watch(`members.${index}.role`) ? "text-muted-foreground" : ""}>
                           <SelectValue placeholder="请选择角色" />
                         </SelectTrigger>
                         <SelectContent>
@@ -279,16 +259,12 @@ export function TeamSection({ form }: TeamSectionProps) {
                           ))}
                         </SelectContent>
                       </Select>
-                      {errors.members?.[index]?.role && (
-                        <p className="text-sm text-destructive">
-                          {errors.members[index]?.role?.message}
-                        </p>
-                      )}
+                      <FieldError message={errors.members?.[index]?.role?.message} />
                     </div>
                     <div className="space-y-2">
-                      <Label>
-                        成员简历 <span className="text-muted-foreground text-xs">（可选，PDF/DOC/DOCX，最大10MB）</span>
-                      </Label>
+                      <FieldLabel optionalHint="（可选，PDF/DOC/DOCX，最大10MB）">
+                        成员简历
+                      </FieldLabel>
 
                       {!uploadStates[index]?.fileName && !watch(`members.${index}.resumeS3Key`) ? (
                         <div className="flex items-center gap-2">
@@ -306,7 +282,7 @@ export function TeamSection({ form }: TeamSectionProps) {
                           />
                         </div>
                       ) : (
-                        <div className="flex items-center gap-2 p-2 border rounded-md bg-muted/50">
+                        <div className="flex items-center gap-2 p-2 border border-border rounded-sm bg-muted/50">
                           {uploadStates[index]?.uploading ? (
                             <>
                               <Loader2 className="h-4 w-4 animate-spin text-primary" />
@@ -323,7 +299,7 @@ export function TeamSection({ form }: TeamSectionProps) {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => clearUpload(index)}
-                                className="h-6 w-6 p-0"
+                                className="h-6 w-6 p-0 rounded-full"
                               >
                                 <X className="h-4 w-4" />
                               </Button>
@@ -332,11 +308,7 @@ export function TeamSection({ form }: TeamSectionProps) {
                         </div>
                       )}
 
-                      {uploadStates[index]?.error && (
-                        <p className="text-sm text-destructive">
-                          {uploadStates[index].error}
-                        </p>
-                      )}
+                      <FieldError message={uploadStates[index]?.error} />
                     </div>
                   </div>
                 </div>
@@ -344,8 +316,7 @@ export function TeamSection({ form }: TeamSectionProps) {
             </div>
           )}
         </div>
-        </CardContent>
-      </Card>
+      </FormSection>
     </>
   )
 }

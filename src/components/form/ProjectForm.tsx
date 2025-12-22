@@ -2,13 +2,14 @@ import { useState, useEffect, useCallback } from 'react'
 import { useForm, FieldErrors } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
+
 import { useToast } from '@/components/ui/toast'
 import { BasicInfoSection } from './BasicInfoSection'
 import { TeamSection } from './TeamSection'
 import { ProjectIntroSection } from './ProjectIntroSection'
 import { BudgetSection } from './BudgetSection'
 import { ContactSection } from './ContactSection'
+import { SubmissionSuccess } from '@/components/form/SubmissionSuccess'
 import { projectFormSchema, type ProjectFormData } from '@/types/form'
 import { MILESTONE_STAGES } from '@/lib/constants'
 import { submitApplication } from '@/services/formApi'
@@ -291,80 +292,12 @@ export function ProjectForm() {
   // 如果提交成功，显示成功页面
   if (applicationNo) {
     return (
-      <div className="flex flex-col items-center justify-center space-y-8 py-16">
-        {/* 成功图标 */}
-        <div className="relative">
-          <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center animate-in zoom-in duration-300">
-            <svg
-              className="w-10 h-10"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2.5}
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-          </div>
-          <div className="absolute inset-0 w-20 h-20 bg-green-400 rounded-full animate-ping opacity-20"></div>
-        </div>
-
-        {/* 成功标题 */}
-        <div className="text-center space-y-2">
-          <h2 className="text-3xl font-bold text-green-600">提交成功！</h2>
-          <p className="text-muted-foreground">
-            您的项目申请已成功提交，我们将尽快进行审核
-          </p>
-          <p className="text-sm text-muted-foreground">
-            页面将在 <span className="font-bold text-primary">{countdown}</span> 秒后自动返回首页
-          </p>
-        </div>
-
-        {/* 申请编号卡片 */}
-        <div className="w-full max-w-md p-6 bg-muted/30 border-2 border-primary/20 rounded-lg space-y-3">
-          <div className="text-center space-y-2">
-            <p className="text-sm text-muted-foreground">申请编号</p>
-            <div className="p-4 bg-background rounded-md border border-border">
-              <p className="text-2xl font-mono font-bold text-primary tracking-wider">
-                {applicationNo}
-              </p>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              请妥善保存此编号，您可以使用该编号查询申请进度
-            </p>
-          </div>
-        </div>
-
-        {/* 下一步提示 */}
-        <div className="w-full max-w-md space-y-4 text-sm">
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h3 className="font-semibold text-blue-900 mb-2">后续流程</h3>
-            <ul className="space-y-1 text-blue-800">
-              <li>• 我们将在 3-5 个工作日内完成初审</li>
-              <li>• 审核结果将通过邮件通知您</li>
-              <li>• 如有疑问，请联系项目联系人</li>
-            </ul>
-          </div>
-        </div>
-
-        {/* 操作按钮 */}
-        <div className="flex gap-4">
-          <Button
-            variant="outline"
-            onClick={() => window.print()}
-          >
-            打印此页面
-          </Button>
-          <Button
-            onClick={clearFillCode}
-          >
-            立即返回首页
-          </Button>
-        </div>
-      </div>
+      <SubmissionSuccess
+        applicationNo={applicationNo}
+        countdown={countdown}
+        onPrint={() => window.print()}
+        onReturn={clearFillCode}
+      />
     )
   }
 
@@ -373,31 +306,24 @@ export function ProjectForm() {
       <ToastContainer />
       <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="space-y-8">
         {/* 第一部分：项目基本信息 */}
+        {/* 第一部分：项目基本信息 */}
         <BasicInfoSection form={form} />
-
-        <Separator />
 
         {/* 第二部分：项目组成员信息 */}
         <TeamSection form={form} />
 
-        <Separator />
-
         {/* 第三部分：项目介绍 */}
         <ProjectIntroSection form={form} />
 
-        <Separator />
-
         {/* 第四部分：项目经费 */}
         <BudgetSection form={form} />
-
-        <Separator />
 
         {/* 第五部分：项目联系人 */}
         <ContactSection form={form} />
 
         {/* 错误提示 */}
         {submitError && (
-          <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-md">
+          <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-sm">
             {submitError}
           </div>
         )}
@@ -407,7 +333,7 @@ export function ProjectForm() {
           <Button
             type="submit"
             size="lg"
-            className="px-12"
+            className="px-12 rounded-full h-14 text-base shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
             disabled={isSubmitting}
           >
             {isSubmitting ? '提交中...' : '提交申请'}

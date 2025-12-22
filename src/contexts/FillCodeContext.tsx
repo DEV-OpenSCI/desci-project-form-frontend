@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { getFillCode, setFillCode as saveFillCode, clearFillCode } from '@/lib/auth'
+import { getFillCode, setFillCode as saveFillCode, clearFillCode, getExpireTime, setExpireTime as saveExpireTime } from '@/lib/auth'
 import { validateFillCode } from '@/services/fillCodeApi'
 
 interface FillCodeContextType {
@@ -21,11 +21,18 @@ export function FillCodeProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null)
   const [expireTime, setExpireTime] = useState<string | null>(null)
 
+
   // 初始化时从 sessionStorage 恢复填写码
   useEffect(() => {
     const savedCode = getFillCode()
+    const savedExpireTime = getExpireTime()
+    console.log('[FillCodeContext] Init:', { savedCode, savedExpireTime })
+
     if (savedCode) {
       setFillCode(savedCode)
+    }
+    if (savedExpireTime) {
+      setExpireTime(savedExpireTime)
     }
   }, [])
 
@@ -35,12 +42,17 @@ export function FillCodeProvider({ children }: { children: ReactNode }) {
 
     try {
       const result = await validateFillCode(code)
+      console.log('[FillCodeContext] Validate result:', result)
 
       if (result.valid) {
         // 填写码有效
         setFillCode(code)
         saveFillCode(code)
         setExpireTime(result.expireTime)
+        if (result.expireTime) {
+          saveExpireTime(result.expireTime)
+          console.log('[FillCodeContext] Saved expire time:', result.expireTime)
+        }
         return true
       } else {
         // 填写码无效
