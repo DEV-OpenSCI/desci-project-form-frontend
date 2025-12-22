@@ -1,6 +1,8 @@
 import client from './client'
 import type { ApiResponse, ApiFormData, SubmitResponse } from './types'
 import type { ProjectFormData } from '@/types/form'
+import { en } from '@/i18n/en'
+import { zh } from '@/i18n/zh'
 
 /**
  * 日期格式化为 YYYY-MM-DD
@@ -74,7 +76,9 @@ export async function submitApplication(
 
   // 确保返回数据存在
   if (!response.data?.applicationNo) {
-    throw new Error('提交成功但未获取到申请编号')
+    const language = typeof window !== 'undefined' && window.localStorage.getItem('language') === 'en' ? 'en' : 'zh'
+    const messages = (language === 'en' ? en : zh).messages
+    throw new Error(messages.missingApplicationNo)
   }
 
   return response.data.applicationNo

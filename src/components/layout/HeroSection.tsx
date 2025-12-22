@@ -1,29 +1,29 @@
 import type { ReactNode } from "react"
-import { ExpireBadge } from "./ExpireBadge"
+import { useTranslation } from "@/i18n"
 
 type HeroSectionProps = {
-  title: string
-  description: ReactNode
-  expireTime?: string
+  title?: string
+  description?: ReactNode
 }
 
-export function HeroSection({ title, description, expireTime }: HeroSectionProps) {
+export function HeroSection({ title, description }: HeroSectionProps) {
+  const { t } = useTranslation()
+
   return (
-    <div className="flex flex-col lg:flex-row items-center justify-between gap-8 bg-card rounded border border-border p-6 md:p-8 mb-8">
-      {/* Left: Content */}
-      <div className="flex flex-col items-start text-left max-w-2xl space-y-4">
+    <div className="flex flex-col items-start gap-4 mb-8">
+      <div className="flex flex-col items-start text-left max-w-3xl space-y-4">
         <h2 className="text-[28px] font-extrabold tracking-tight text-foreground">
-          {title}
+          {title || t.hero.title}
         </h2>
 
         <div className="text-base text-muted-foreground leading-relaxed font-sans text-pretty">
-          {description}
+          {description || (
+            <>
+              {t.hero.description}{' '}
+              <span className="text-destructive font-bold">{t.hero.requiredMark}</span> {t.hero.requiredText}
+            </>
+          )}
         </div>
-      </div>
-
-      {/* Right: Timer Section */}
-      <div className="w-full lg:w-auto flex justify-center lg:justify-end animate-in fade-in slide-in-from-right-4 duration-700">
-        <ExpireBadge expireTime={expireTime} />
       </div>
     </div>
   )

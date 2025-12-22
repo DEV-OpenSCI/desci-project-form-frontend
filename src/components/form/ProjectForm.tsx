@@ -10,10 +10,10 @@ import { ProjectIntroSection } from './ProjectIntroSection'
 import { BudgetSection } from './BudgetSection'
 import { ContactSection } from './ContactSection'
 import { SubmissionSuccess } from '@/components/form/SubmissionSuccess'
-import { projectFormSchema, type ProjectFormData } from '@/types/form'
-import { MILESTONE_STAGES } from '@/lib/constants'
+import { createProjectFormSchema, type ProjectFormData } from '@/types/form'
 import { submitApplication } from '@/services/formApi'
 import { useFillCode } from '@/contexts/FillCodeContext'
+import { useTranslation } from '@/i18n'
 
 // 测试用 mock 数据
 function getMockFormData(): ProjectFormData {
@@ -30,47 +30,47 @@ function getMockFormData(): ProjectFormData {
   const phase3End = new Date(endDate)
 
   return {
-    projectName: '基于区块链的去中心化科研数据共享平台研究',
+    projectName: 'Decentralized Research Data Sharing Platform',
     startDate,
     endDate,
-    discipline: 'information',
+    discipline: 'engineering',
     field: 'materials',
     teamSize: 5,
     leader: {
-      name: '张三',
+      name: 'Alex Chen',
       orcid: '0000-0002-1234-5678',
-      email: 'zhangsan@example.edu.cn',
+      email: 'alex.chen@example.edu.cn',
       title: 'professor',
       education: 'phd',
-      bio: '长期从事分布式系统和区块链技术研究，发表SCI论文30余篇。',
+      bio: 'Focused on distributed systems and blockchain research, with multiple publications and project leadership.',
     },
     members: [
-      { role: '数据工程师', resumeS3Key: '' },
-      { role: '前端开发工程师', resumeS3Key: '' },
+      { role: 'key-member', resumeS3Key: '' },
+      { role: 'other-member', resumeS3Key: '' },
     ],
-    projectSummary: '当前科研数据共享面临信任缺失、激励不足、隐私泄露等问题。本项目拟采用区块链技术构建去中心化的科研数据共享平台，通过智能合约实现数据确权、访问控制和贡献激励，利用零知识证明保护数据隐私，从而促进科研数据的安全、高效流通，推动开放科学发展。',
-    background: '随着大数据时代的到来，科研数据已成为重要的战略资源。然而，现有的中心化数据共享模式存在诸多问题：数据孤岛现象严重、共享意愿不足、数据确权困难、隐私保护薄弱等。区块链技术的去中心化、不可篡改、可追溯等特性，为解决这些问题提供了新的思路。本项目的实施将有助于打破科研数据壁垒，提升科研协作效率，加速科技创新。',
+    projectSummary: 'Research data sharing faces challenges such as lack of trust, weak incentives, and privacy risks. This project proposes a decentralized platform with smart contracts for data ownership, access control, and contribution incentives.',
+    background: 'Research data is increasingly strategic, yet centralized sharing models suffer from silos and weak data protection. Decentralized systems can improve transparency, traceability, and collaboration efficiency.',
     milestones: [
       {
         stage: 'early',
         startDate: phase1Start,
         endDate: phase1End,
-        content: '完成系统架构设计和核心模块开发',
-        goals: '完成需求分析和系统设计文档\n完成区块链底层选型和适配\n开发数据确权智能合约',
+        content: 'Finalize system architecture and core module development',
+        goals: 'Complete requirements analysis and system design\nSelect and integrate a blockchain framework\nDevelop data ownership smart contracts',
       },
       {
         stage: 'mid',
         startDate: phase2Start,
         endDate: phase2End,
-        content: '完成平台主要功能开发和测试',
-        goals: '完成数据共享和访问控制模块\n完成激励机制设计和实现\n发表SCI论文2篇',
+        content: 'Deliver main platform features and testing',
+        goals: 'Implement data sharing and access control modules\nDeliver contribution incentive mechanism\nSubmit 2 conference papers',
       },
       {
         stage: 'late',
         startDate: phase3Start,
         endDate: phase3End,
-        content: '完成系统集成测试和示范应用',
-        goals: '完成系统性能优化和安全审计\n在3个以上科研机构进行示范应用\n申请发明专利2项',
+        content: 'Complete integration testing and pilot deployment',
+        goals: 'Optimize performance and conduct security audit\nRun pilots across 3+ research institutions\nFile 2 patent applications',
       },
     ],
     budgetItems: [
@@ -83,8 +83,8 @@ function getMockFormData(): ProjectFormData {
       { category: 'labor', donationAmount: 60000, selfFundedAmount: 20000 },
     ],
     contact: {
-      name: '李四',
-      email: 'lisi@example.edu.cn',
+      name: 'Jamie Lee',
+      email: 'jamie.lee@example.edu.cn',
       phone: '13800138000',
     },
   }
@@ -173,12 +173,13 @@ export function ProjectForm() {
   const [countdown, setCountdown] = useState(REDIRECT_COUNTDOWN)
   const { clear: clearFillCode } = useFillCode()
   const { showToast, ToastContainer } = useToast()
+  const { t } = useTranslation()
 
   // 检测是否为测试模式
   const isTestMode = new URLSearchParams(window.location.search).get('test') === 'true'
 
   const form = useForm<ProjectFormData>({
-    resolver: zodResolver(projectFormSchema),
+    resolver: zodResolver(createProjectFormSchema(t)),
     defaultValues: {
       projectName: '',
       discipline: '',
@@ -195,7 +196,7 @@ export function ProjectForm() {
       members: [],
       projectSummary: '',
       background: '',
-      milestones: MILESTONE_STAGES.map((stage) => ({
+      milestones: t.options.milestoneStages.map((stage) => ({
         stage: stage.value,
         startDate: undefined as unknown as Date,
         endDate: undefined as unknown as Date,
@@ -229,7 +230,7 @@ export function ProjectForm() {
       setCountdown(REDIRECT_COUNTDOWN) // 重置倒计时
     } catch (error) {
       setSubmitError(
-        error instanceof Error ? error.message : '提交失败，请稍后重试'
+        error instanceof Error ? error.message : t.messages.submitFailed
       )
     } finally {
       setIsSubmitting(false)
@@ -260,7 +261,7 @@ export function ProjectForm() {
 
     // 显示 toast 提示
     showToast(
-      `请检查表单，还有 ${errorCount} 项必填内容未填写`,
+      t.messages.formMissingRequired.replace('{count}', `${errorCount}`),
       'warning'
     )
 
@@ -269,7 +270,7 @@ export function ProjectForm() {
     if (firstErrorField) {
       setTimeout(() => scrollToErrorField(firstErrorField), 100)
     }
-  }, [showToast])
+  }, [showToast, t])
 
   // 提交成功后的倒计时逻辑
   useEffect(() => {
@@ -336,7 +337,7 @@ export function ProjectForm() {
             className="px-12 rounded-full h-14 text-base shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
             disabled={isSubmitting}
           >
-            {isSubmitting ? '提交中...' : '提交申请'}
+            {isSubmitting ? t.common.submitting : t.common.submit}
           </Button>
         </div>
       </form>

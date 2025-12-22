@@ -1,5 +1,5 @@
 import { UseFormReturn, useFieldArray } from 'react-hook-form'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, HelpCircle } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import {
@@ -9,11 +9,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { FieldLabel } from '@/components/form/FieldLabel'
 import { FieldError } from '@/components/form/FieldError'
 import { FormSection } from '@/components/form/FormSection'
 import type { ProjectFormData } from '@/types/form'
-import { BUDGET_CATEGORIES } from '@/lib/constants'
+import { useTranslation } from '@/i18n'
 
 interface BudgetSectionProps {
   form: UseFormReturn<ProjectFormData>
@@ -21,6 +27,7 @@ interface BudgetSectionProps {
 
 export function BudgetSection({ form }: BudgetSectionProps) {
   const { register, setValue, watch, formState: { errors } } = form
+  const { t } = useTranslation()
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -38,72 +45,82 @@ export function BudgetSection({ form }: BudgetSectionProps) {
   const total = totalDonation + totalSelfFund
 
   return (
-    <FormSection title="项目经费" description="研究人员提交经费列表，总额作为捐赠/资助的软顶目标">
-      {/* 经费类别说明 */}
-      <div className="grid gap-8 md:grid-cols-2">
-        {BUDGET_CATEGORIES.map((item) => (
-          <div
-            key={item.value}
-            className="group flex flex-col gap-4 p-6 bg-card hover:bg-muted/50 border border-border/60 hover:border-primary/20 rounded-lg transition-all duration-300"
-          >
-            <div className="font-bold text-base text-primary/90 group-hover:text-primary transition-colors">
-              {item.label}
-            </div>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {item.description}
-            </p>
-          </div>
-        ))}
-      </div>
+    <FormSection title={t.sections.budget.title} description={t.sections.budget.description}>
 
       {/* 经费列表 */}
       <div className="space-y-8">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-lg">经费明细</h3>
+          <h3 className="font-semibold text-lg">{t.sections.budget.details}</h3>
           <Button type="button" variant="outline" size="sm" onClick={addBudgetItem} className="rounded-full">
             <Plus className="h-4 w-4 mr-1" />
-            添加经费项
+            {t.sections.budget.addItem}
           </Button>
         </div>
 
         {/* 表头 */}
         <div className="border-b overflow-hidden">
-          <div className="hidden md:grid md:grid-cols-[auto_1fr_1fr_1fr_auto] gap-8 px-4 py-3 border-b font-bold text-sm text-muted-foreground uppercase tracking-widest">
-            <div className="w-12 text-center">NO.</div>
-            <div>Category</div>
-            <div>Donation (CNY)</div>
-            <div>Self-Funded (CNY)</div>
+          <div className="hidden md:grid md:grid-cols-[3rem_1.3fr_1fr_1fr_1fr_2.5rem] gap-4 py-3 border-b font-normal text-sm text-foreground uppercase tracking-widest items-center whitespace-nowrap">
+            <div className="w-12 text-center">{t.sections.budget.tableNo}</div>
+            <div className="flex items-center gap-1">
+              {t.sections.budget.tableCategory}
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button type="button" className="text-muted-foreground hover:text-primary transition-colors">
+                      <HelpCircle className="h-3.5 w-3.5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent
+                    side="bottom"
+                    collisionPadding={16}
+                    className="max-w-sm max-h-[60vh] overflow-y-auto bg-popover text-popover-foreground border border-border shadow-xl p-4"
+                  >
+                    <ul className="grid gap-3 text-xs text-left">
+                      {t.options.budgetCategories.map((cat) => (
+                        <li key={cat.value} className="flex flex-col gap-1 border-b border-border/50 pb-2 last:border-0 last:pb-0">
+                          <span className="font-bold text-primary text-sm">{cat.label}</span>
+                          <span className="text-muted-foreground leading-normal">{cat.description}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            <div>{t.sections.budget.tableDonation}</div>
+            <div>{t.sections.budget.tableSelfFunded}</div>
+            <div className="text-right pr-8">{t.sections.budget.tableSubtotal}</div>
             <div className="w-10"></div>
           </div>
 
           {fields.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              暂无经费项，点击上方按钮添加
+              {t.sections.budget.noItems}
             </div>
           ) : (
             <div>
               {fields.map((field, index) => (
                 <div
                   key={field.id}
-                  className="grid gap-8 md:grid-cols-[auto_1fr_1fr_1fr_auto] items-center p-4 transition-colors"
+                  className="grid gap-4 md:grid-cols-[3rem_1.3fr_1fr_1fr_1fr_2.5rem] items-center py-4 transition-colors"
                 >
                   {/* 序号 */}
-                  <div className="hidden md:flex items-center justify-center w-12 h-9 bg-muted rounded-full font-medium font-mono text-sm">
+                  <div className="hidden md:flex items-center justify-center w-12 font-bold text-sm">
                     {index + 1}
                   </div>
 
                   {/* 经费类别 */}
-                  <div className="flex flex-col gap-2">
-                    <FieldLabel className="md:hidden">经费类别</FieldLabel>
+                  <div className="flex flex-col gap-2 min-w-0">
+                    <FieldLabel className="md:hidden">{t.sections.budget.category}</FieldLabel>
                     <Select
                       value={watch(`budgetItems.${index}.category`)}
                       onValueChange={(value) => setValue(`budgetItems.${index}.category`, value)}
                     >
-                      <SelectTrigger className={!watch(`budgetItems.${index}.category`) ? "text-muted-foreground" : ""}>
-                        <SelectValue placeholder="请选择经费类别" />
+                      <SelectTrigger className={`w-full text-sm [&>span]:truncate ${!watch(`budgetItems.${index}.category`) ? "text-muted-foreground" : ""}`}>
+                        <SelectValue placeholder={t.sections.budget.categoryPlaceholder} />
                       </SelectTrigger>
                       <SelectContent>
-                        {BUDGET_CATEGORIES.map((item) => (
+                        {t.options.budgetCategories.map((item) => (
                           <SelectItem key={item.value} value={item.value}>
                             {item.label}
                           </SelectItem>
@@ -115,28 +132,33 @@ export function BudgetSection({ form }: BudgetSectionProps) {
 
                   {/* 捐赠/资助额 */}
                   <div className="flex flex-col gap-2">
-                    <FieldLabel className="md:hidden">捐赠/资助额（元）</FieldLabel>
+                    <FieldLabel className="md:hidden">{t.sections.budget.donation}</FieldLabel>
                     <Input
                       type="number"
                       min={0}
                       placeholder="0"
                       {...register(`budgetItems.${index}.donationAmount`, { valueAsNumber: true })}
-                      className="font-mono bg-transparent"
+                      className="font-mono bg-transparent text-sm"
                     />
                     <FieldError message={errors.budgetItems?.[index]?.donationAmount?.message} />
                   </div>
 
                   {/* 项目自筹经费 */}
                   <div className="flex flex-col gap-2">
-                    <FieldLabel className="md:hidden">项目自筹经费（元）</FieldLabel>
+                    <FieldLabel className="md:hidden">{t.sections.budget.selfFunded}</FieldLabel>
                     <Input
                       type="number"
                       min={0}
                       placeholder="0"
                       {...register(`budgetItems.${index}.selfFundedAmount`, { valueAsNumber: true })}
-                      className="font-mono bg-transparent"
+                      className="font-mono bg-transparent text-sm"
                     />
                     <FieldError message={errors.budgetItems?.[index]?.selfFundedAmount?.message} />
+                  </div>
+
+                  {/* 小计 */}
+                  <div className="hidden md:flex items-center justify-end md:pr-8 h-12 font-mono font-medium text-foreground text-sm">
+                    {((watch(`budgetItems.${index}.donationAmount`) || 0) + (watch(`budgetItems.${index}.selfFundedAmount`) || 0)).toLocaleString()}
                   </div>
 
                   {/* 删除按钮 */}
@@ -158,23 +180,21 @@ export function BudgetSection({ form }: BudgetSectionProps) {
 
           {/* 合计 */}
           {fields.length > 0 && (
-            <div className="grid gap-8 md:grid-cols-[auto_1fr_1fr_1fr_auto] items-center p-4 font-medium">
+            <div className="grid gap-4 md:grid-cols-[3rem_1.3fr_1fr_1fr_1fr_2.5rem] items-center py-4 font-medium">
               <div className="w-12"></div>
-              <div className="font-bold uppercase tracking-widest text-sm">Total</div>
-              <div className="text-primary font-mono font-bold">{totalDonation.toLocaleString()} 元</div>
-              <div className="text-primary font-mono font-bold">{totalSelfFund.toLocaleString()} 元</div>
+              <div className="font-bold uppercase tracking-widest text-sm">{t.sections.budget.tableTotal}</div>
+              <div className="text-primary font-mono font-bold text-sm">{totalDonation.toLocaleString()} {t.sections.budget.yuan}</div>
+              <div className="text-primary font-mono font-bold text-sm">{totalSelfFund.toLocaleString()} {t.sections.budget.yuan}</div>
+              <div className="text-right text-primary font-mono font-bold text-sm md:pr-8">{total.toLocaleString()} {t.sections.budget.yuan}</div>
               <div className="w-10"></div>
             </div>
           )}
         </div>
 
         {fields.length > 0 && (
-          <div className="space-y-2 text-right pt-4">
-            <div className="text-lg font-semibold">
-              总经费：<span className="text-primary font-mono text-xl">{total.toLocaleString()} 元</span>
-            </div>
-            <div className="text-lg font-semibold">
-              申请 OPENSCI 捐赠款：<span className="text-blue-700 font-mono text-xl">{totalDonation.toLocaleString()} 元</span>
+          <div className="space-y-2 text-right pt-2">
+            <div className="text-sm font-bold">
+              {t.sections.budget.donationTotal}<span className="text-blue-700 font-mono text-sm">{totalDonation.toLocaleString()} {t.sections.budget.yuan}</span>
             </div>
           </div>
         )}

@@ -27,7 +27,7 @@ export function FillCodeForm() {
       <FillCodePanel>
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="space-y-4">
-            <Label htmlFor="fillCode" className="text-xs font-mono uppercase tracking-widest text-muted-foreground font-bold">
+            <Label htmlFor="fillCode" className="text-sm font-mono uppercase tracking-widest text-muted-foreground font-bold">
               Access Code
             </Label>
             <Input

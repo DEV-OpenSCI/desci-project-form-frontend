@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { getFillCode, setFillCode as saveFillCode, clearFillCode, getExpireTime, setExpireTime as saveExpireTime } from '@/lib/auth'
 import { validateFillCode } from '@/services/fillCodeApi'
+import { useTranslation } from '@/i18n'
 
 interface FillCodeContextType {
   fillCode: string | null
@@ -20,6 +21,7 @@ export function FillCodeProvider({ children }: { children: ReactNode }) {
   const [isValidating, setIsValidating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [expireTime, setExpireTime] = useState<string | null>(null)
+  const { t, language } = useTranslation()
 
 
   // 初始化时从 sessionStorage 恢复填写码
@@ -56,11 +58,13 @@ export function FillCodeProvider({ children }: { children: ReactNode }) {
         return true
       } else {
         // 填写码无效
-        setError(result.message || '填写码无效')
+        const fallbackMessage = t.messages.fillCodeInvalid
+        const message = language === 'en' ? fallbackMessage : (result.message || fallbackMessage)
+        setError(message)
         return false
       }
     } catch (err) {
-      setError('校验失败，请稍后重试')
+      setError(t.messages.fillCodeValidateFailed)
       return false
     } finally {
       setIsValidating(false)

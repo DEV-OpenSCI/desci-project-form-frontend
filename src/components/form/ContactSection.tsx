@@ -4,6 +4,7 @@ import { FieldLabel } from '@/components/form/FieldLabel'
 import { FieldError } from '@/components/form/FieldError'
 import { FormSection } from '@/components/form/FormSection'
 import type { ProjectFormData } from '@/types/form'
+import { useTranslation } from '@/i18n'
 
 interface ContactSectionProps {
   form: UseFormReturn<ProjectFormData>
@@ -11,18 +12,19 @@ interface ContactSectionProps {
 
 export function ContactSection({ form }: ContactSectionProps) {
   const { register, formState: { errors } } = form
+  const { t } = useTranslation()
 
   return (
-    <FormSection title="项目联系人" description="填写项目联系人的信息，用于后续沟通联络">
+    <FormSection title={t.sections.contact.title} description={t.sections.contact.description}>
       <div className="grid gap-8 md:grid-cols-3">
         {/* 姓名 */}
         <div className="space-y-2">
           <FieldLabel htmlFor="contact.name" required>
-            姓名
+            {t.sections.contact.name}
           </FieldLabel>
           <Input
             id="contact.name"
-            placeholder="请输入联系人姓名"
+            placeholder={t.sections.contact.namePlaceholder}
             {...register('contact.name')}
           />
           <FieldError message={errors.contact?.name?.message} />
@@ -31,12 +33,12 @@ export function ContactSection({ form }: ContactSectionProps) {
         {/* 联系邮箱 */}
         <div className="space-y-2">
           <FieldLabel htmlFor="contact.email" required>
-            联系邮箱
+            {t.sections.contact.email}
           </FieldLabel>
           <Input
             id="contact.email"
             type="email"
-            placeholder="请输入联系邮箱"
+            placeholder={t.sections.contact.emailPlaceholder}
             {...register('contact.email')}
           />
           <FieldError message={errors.contact?.email?.message} />
@@ -45,12 +47,12 @@ export function ContactSection({ form }: ContactSectionProps) {
         {/* 联系电话 */}
         <div className="space-y-2">
           <FieldLabel htmlFor="contact.phone" required>
-            联系电话
+            {t.sections.contact.phone}
           </FieldLabel>
           <Input
             id="contact.phone"
             type="tel"
-            placeholder="请输入联系电话"
+            placeholder={t.sections.contact.phonePlaceholder}
             {...register('contact.phone')}
           />
           <FieldError message={errors.contact?.phone?.message} />

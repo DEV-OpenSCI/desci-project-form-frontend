@@ -28,7 +28,7 @@ export function ExpireBadge({ expireTime }: ExpireBadgeProps) {
         <div className="flex flex-col items-center md:items-start gap-2">
           <div className="flex items-center gap-2 text-primary/80 bg-primary/5 px-3 py-1 rounded-full w-fit">
             <Clock className="w-3.5 h-3.5" />
-            <span className="text-[11px] font-bold font-mono uppercase tracking-widest">Valid Until</span>
+            <span className="text-sm font-bold font-mono uppercase tracking-widest">Valid Until</span>
           </div>
           <div className="text-xl font-mono font-bold text-foreground/80 tracking-tight pl-1">
             {year}.{month}.{day}
@@ -60,7 +60,7 @@ export function ExpireBadge({ expireTime }: ExpireBadgeProps) {
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75 duration-1000" />
             <div className="relative flex items-center gap-1.5 bg-background shadow-sm border border-border px-2.5 py-1 rounded-full">
               <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-              <span className="text-[10px] font-bold text-green-600 uppercase tracking-wider">Active</span>
+              <span className="text-sm font-bold text-green-600 uppercase tracking-wider">Active</span>
             </div>
           </div>
         </div>
@@ -83,7 +83,7 @@ function TimeBlock({ value, label, highlight = false }: { value: string; label: 
           {value}
         </span>
       </div>
-      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider scale-90">
+      <span className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
         {label}
       </span>
     </div>

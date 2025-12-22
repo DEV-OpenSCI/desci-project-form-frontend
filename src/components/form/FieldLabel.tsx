@@ -21,7 +21,7 @@ export function FieldLabel({
     <Label htmlFor={htmlFor} className={cn('flex flex-wrap items-center gap-2', className)}>
       <span>{children}</span>
       {required && <span className="text-destructive">*</span>}
-      {optionalHint && <span className="text-muted-foreground text-xs">{optionalHint}</span>}
+      {optionalHint && <span className="text-muted-foreground text-sm">{optionalHint}</span>}
     </Label>
   )
 }

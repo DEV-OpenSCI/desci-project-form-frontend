@@ -14,7 +14,7 @@ export function FillCodeLayout({ children, footerText = '© 2025 DeSci Foundatio
         {children}
       </div>
 
-      <div className="absolute bottom-8 text-xs text-muted-foreground/40 font-mono tracking-widest uppercase">
+      <div className="absolute bottom-8 text-sm text-muted-foreground/40 font-mono tracking-widest uppercase">
         {footerText}
       </div>
     </div>

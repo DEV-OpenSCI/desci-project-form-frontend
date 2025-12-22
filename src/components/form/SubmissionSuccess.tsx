@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button'
+import { useTranslation } from '@/i18n'
 
 interface SubmissionSuccessProps {
   applicationNo: string
@@ -25,12 +26,15 @@ interface SuccessMessageProps {
 }
 
 function SuccessMessage({ countdown }: SuccessMessageProps) {
+  const { t } = useTranslation()
   return (
     <div className="text-center space-y-2">
-      <h2 className="text-3xl font-bold text-chart-2 font-sans">提交成功！</h2>
-      <p className="text-muted-foreground">您的项目申请已成功提交，我们将尽快进行审核</p>
+      <h2 className="text-3xl font-bold text-chart-2 font-sans">{t.submission.title}</h2>
+      <p className="text-muted-foreground">{t.submission.description}</p>
       <p className="text-sm text-muted-foreground">
-        页面将在 <span className="font-bold text-primary font-mono">{countdown}</span> 秒后自动返回首页
+        {t.submission.countdownPrefix}{' '}
+        <span className="font-bold text-primary font-mono">{countdown}</span>{' '}
+        {t.submission.countdownSuffix}
       </p>
     </div>
   )
@@ -41,28 +45,30 @@ interface ApplicationCardProps {
 }
 
 function ApplicationCard({ applicationNo }: ApplicationCardProps) {
+  const { t } = useTranslation()
   return (
     <div className="w-full max-w-md p-6 bg-muted/30 border-2 border-primary/20 rounded-sm space-y-3">
       <div className="text-center space-y-2">
-        <p className="text-sm text-muted-foreground font-mono uppercase tracking-widest">申请编号</p>
+        <p className="text-sm text-muted-foreground font-mono uppercase tracking-widest">{t.submission.applicationNoLabel}</p>
         <div className="p-4 bg-background rounded-sm border border-border">
           <p className="text-2xl font-mono font-bold text-primary tracking-wider">{applicationNo}</p>
         </div>
-        <p className="text-xs text-muted-foreground">请妥善保存此编号，您可以使用该编号查询申请进度</p>
+        <p className="text-sm text-muted-foreground">{t.submission.applicationNoHint}</p>
       </div>
     </div>
   )
 }
 
 function NextSteps() {
+  const { t } = useTranslation()
   return (
     <div className="w-full max-w-md space-y-4 text-sm">
       <div className="p-4 bg-primary/5 border border-primary/10 rounded-sm">
-        <h3 className="font-bold text-primary mb-2 font-mono uppercase tracking-wide">后续流程</h3>
+        <h3 className="font-bold text-primary mb-2 font-mono uppercase tracking-wide">{t.submission.nextStepsTitle}</h3>
         <ul className="space-y-1 text-muted-foreground">
-          <li>• 我们将在 3-5 个工作日内完成初审</li>
-          <li>• 审核结果将通过邮件通知您</li>
-          <li>• 如有疑问，请联系项目联系人</li>
+          {t.submission.nextSteps.map((step) => (
+            <li key={step}>• {step}</li>
+          ))}
         </ul>
       </div>
     </div>
@@ -75,13 +81,14 @@ interface SuccessActionsProps {
 }
 
 function SuccessActions({ onPrint, onReturn }: SuccessActionsProps) {
+  const { t } = useTranslation()
   return (
     <div className="flex gap-4">
       <Button variant="outline" className="rounded-full" onClick={onPrint}>
-        打印此页面
+        {t.submission.print}
       </Button>
       <Button className="rounded-full" onClick={onReturn}>
-        立即返回首页
+        {t.submission.returnHome}
       </Button>
     </div>
   )
