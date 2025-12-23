@@ -15,7 +15,7 @@ export function Toast({ message, type = 'error', duration = 4000, onClose }: Toa
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsVisible(false)
-      setTimeout(onClose, 300) // 等待动画完成后关闭
+      setTimeout(onClose, 300) // Close after the animation completes
     }, duration)
 
     return () => clearTimeout(timer)
@@ -28,9 +28,9 @@ export function Toast({ message, type = 'error', duration = 4000, onClose }: Toa
   }
 
   const bgColors = {
-    success: 'bg-chart-2/10 border-chart-2/30',
-    error: 'bg-destructive/10 border-destructive/30',
-    warning: 'bg-chart-3/10 border-chart-3/30',
+    success: 'bg-white border-foreground',
+    error: 'bg-white border-foreground',
+    warning: 'bg-white border-foreground',
   }
 
   return (
@@ -63,7 +63,7 @@ export function Toast({ message, type = 'error', duration = 4000, onClose }: Toa
   )
 }
 
-// Toast 容器，用于管理多个 toast
+// Toast container for managing multiple toasts
 interface ToastItem {
   id: number
   message: string

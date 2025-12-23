@@ -24,7 +24,7 @@ export function BasicInfoSection({ form }: BasicInfoSectionProps) {
 
   return (
     <FormSection title={t.sections.basicInfo.title}>
-      {/* 项目名称 */}
+      {/* Project name */}
       <div className="space-y-2">
         <FieldLabel htmlFor="projectName" required>
           {t.sections.basicInfo.projectName}
@@ -37,7 +37,7 @@ export function BasicInfoSection({ form }: BasicInfoSectionProps) {
         <FieldError message={errors.projectName?.message} />
       </div>
 
-      {/* 预期起止时间 */}
+      {/* Expected start/end dates */}
       <div className="grid gap-8 md:grid-cols-2">
         <div className="space-y-2">
           <FieldLabel required>{t.sections.basicInfo.startDate}</FieldLabel>
@@ -59,7 +59,7 @@ export function BasicInfoSection({ form }: BasicInfoSectionProps) {
         </div>
       </div>
 
-      {/* 所属专项和领域 */}
+      {/* Discipline and field */}
       <div className="grid gap-8 md:grid-cols-2">
         <div className="space-y-2">
           <FieldLabel required>{t.sections.basicInfo.discipline}</FieldLabel>
@@ -101,7 +101,7 @@ export function BasicInfoSection({ form }: BasicInfoSectionProps) {
         </div>
       </div>
 
-      {/* 项目人数 */}
+      {/* Team size */}
       <div className="space-y-2 md:w-1/2">
         <FieldLabel htmlFor="teamSize" required>
           {t.sections.basicInfo.teamSize}

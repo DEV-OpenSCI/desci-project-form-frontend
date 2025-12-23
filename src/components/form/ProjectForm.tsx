@@ -15,13 +15,13 @@ import { submitApplication } from '@/services/formApi'
 import { useFillCode } from '@/contexts/FillCodeContext'
 import { useTranslation } from '@/i18n'
 
-// 测试用 mock 数据
+// Mock data for test mode
 function getMockFormData(): ProjectFormData {
   const now = new Date()
   const startDate = new Date(now.getFullYear(), now.getMonth(), 1)
   const endDate = new Date(now.getFullYear() + 2, now.getMonth(), 0)
 
-  // 里程碑时间分配（每阶段约8个月）
+  // Milestone timing (roughly 8 months per phase)
   const phase1Start = new Date(startDate)
   const phase1End = new Date(startDate.getFullYear(), startDate.getMonth() + 8, 0)
   const phase2Start = new Date(phase1End.getFullYear(), phase1End.getMonth() + 1, 1)
@@ -90,9 +90,9 @@ function getMockFormData(): ProjectFormData {
   }
 }
 
-const REDIRECT_COUNTDOWN = 10 // 倒计时秒数
+const REDIRECT_COUNTDOWN = 10 // Countdown seconds
 
-// 获取第一个错误字段的名称（支持嵌套）
+// Get the first errored field name (supports nesting)
 function getFirstErrorFieldName(errors: FieldErrors<ProjectFormData>): string | null {
   const fieldOrder = [
     'projectName', 'startDate', 'endDate', 'discipline', 'field', 'teamSize',
@@ -115,7 +115,7 @@ function getFirstErrorFieldName(errors: FieldErrors<ProjectFormData>): string | 
     }
   }
 
-  // 检查数组字段
+  // Check array fields
   if (errors.milestones) {
     for (let i = 0; i < 3; i++) {
       const milestoneErrors = errors.milestones[i]
@@ -133,18 +133,18 @@ function getFirstErrorFieldName(errors: FieldErrors<ProjectFormData>): string | 
   return null
 }
 
-// 滚动到错误字段
+// Scroll to the errored field
 function scrollToErrorField(fieldName: string) {
-  // 尝试通过 name 属性查找
+  // Try to find by name attribute
   let element = document.querySelector(`[name="${fieldName}"]`) as HTMLElement
 
-  // 如果找不到，尝试通过 id 查找（某些组件如 Select 可能使用 id）
+  // If not found, try id (some components like Select use id)
   if (!element) {
     const idFieldName = fieldName.replace(/\./g, '-')
     element = document.getElementById(idFieldName) as HTMLElement
   }
 
-  // 如果还是找不到，尝试查找相关的 label
+  // If still not found, try related labels
   if (!element) {
     const labels = document.querySelectorAll('label')
     for (const label of labels) {
@@ -157,7 +157,7 @@ function scrollToErrorField(fieldName: string) {
 
   if (element) {
     element.scrollIntoView({ behavior: 'smooth', block: 'center' })
-    // 尝试聚焦
+    // Try to focus the element
     setTimeout(() => {
       if (element && 'focus' in element) {
         (element as HTMLInputElement).focus?.()
@@ -175,7 +175,7 @@ export function ProjectForm() {
   const { showToast, ToastContainer } = useToast()
   const { t } = useTranslation()
 
-  // 检测是否为测试模式
+  // Check if test mode is enabled
   const isTestMode = new URLSearchParams(window.location.search).get('test') === 'true'
 
   const form = useForm<ProjectFormData>({
@@ -212,7 +212,7 @@ export function ProjectForm() {
     },
   })
 
-  // 测试模式下自动填充 mock 数据
+  // Auto-fill mock data in test mode
   useEffect(() => {
     if (isTestMode) {
       const mockData = getMockFormData()
@@ -227,7 +227,7 @@ export function ProjectForm() {
     try {
       const appNo = await submitApplication(data)
       setApplicationNo(appNo)
-      setCountdown(REDIRECT_COUNTDOWN) // 重置倒计时
+      setCountdown(REDIRECT_COUNTDOWN) // Reset countdown
     } catch (error) {
       setSubmitError(
         error instanceof Error ? error.message : t.messages.submitFailed
@@ -237,9 +237,9 @@ export function ProjectForm() {
     }
   }
 
-  // 表单校验失败时的处理
+  // Handle validation failure
   const onInvalid = useCallback((errors: FieldErrors<ProjectFormData>) => {
-    // 计算错误数量
+    // Count validation errors
     let errorCount = 0
     const countErrors = (obj: unknown): number => {
       if (!obj || typeof obj !== 'object') return 0
@@ -259,20 +259,20 @@ export function ProjectForm() {
     }
     errorCount = countErrors(errors)
 
-    // 显示 toast 提示
+    // Show toast notification
     showToast(
       t.messages.formMissingRequired.replace('{count}', `${errorCount}`),
       'warning'
     )
 
-    // 滚动到第一个错误字段
+    // Scroll to the first errored field
     const firstErrorField = getFirstErrorFieldName(errors)
     if (firstErrorField) {
       setTimeout(() => scrollToErrorField(firstErrorField), 100)
     }
   }, [showToast, t])
 
-  // 提交成功后的倒计时逻辑
+  // Countdown logic after successful submission
   useEffect(() => {
     if (!applicationNo) return
 
@@ -280,7 +280,7 @@ export function ProjectForm() {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer)
-          clearFillCode() // 倒计时结束后清除填写码，返回首页
+          clearFillCode() // Clear code after countdown and return home
           return 0
         }
         return prev - 1
@@ -290,7 +290,7 @@ export function ProjectForm() {
     return () => clearInterval(timer)
   }, [applicationNo, clearFillCode])
 
-  // 如果提交成功，显示成功页面
+  // Show success page after submission
   if (applicationNo) {
     return (
       <SubmissionSuccess
@@ -306,30 +306,30 @@ export function ProjectForm() {
     <>
       <ToastContainer />
       <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="space-y-8">
-        {/* 第一部分：项目基本信息 */}
-        {/* 第一部分：项目基本信息 */}
+        {/* Section 1: Basic project information */}
+        {/* Section 1: Basic project information */}
         <BasicInfoSection form={form} />
 
-        {/* 第二部分：项目组成员信息 */}
+        {/* Section 2: Team information */}
         <TeamSection form={form} />
 
-        {/* 第三部分：项目介绍 */}
+        {/* Section 3: Project introduction */}
         <ProjectIntroSection form={form} />
 
-        {/* 第四部分：项目经费 */}
+        {/* Section 4: Project budget */}
         <BudgetSection form={form} />
 
-        {/* 第五部分：项目联系人 */}
+        {/* Section 5: Contact person */}
         <ContactSection form={form} />
 
-        {/* 错误提示 */}
+        {/* Error prompt */}
         {submitError && (
           <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-sm">
             {submitError}
           </div>
         )}
 
-        {/* 提交按钮 */}
+        {/* Submit button */}
         <div className="flex justify-center pt-6">
           <Button
             type="submit"

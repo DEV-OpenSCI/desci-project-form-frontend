@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { UseFormReturn, useFieldArray } from 'react-hook-form'
-import { Plus, Trash2, X, Check, Loader2 } from 'lucide-react'
-import { Input } from '@/components/ui/input'
+import { Plus, Trash2, X, Check, Loader2, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/components/ui/toast'
 import {
@@ -35,6 +35,7 @@ interface UploadState {
 export function TeamSection({ form }: TeamSectionProps) {
   const { register, setValue, watch, formState: { errors } } = form
   const [uploadStates, setUploadStates] = useState<UploadState>({})
+  const fileInputRefs = useRef<Record<number, HTMLInputElement | null>>({})
   const { showToast, ToastContainer } = useToast()
   const { t } = useTranslation()
 
@@ -48,7 +49,7 @@ export function TeamSection({ form }: TeamSectionProps) {
   }
 
   const handleFileUpload = async (index: number, file: File) => {
-    // 验证文件
+    // Validate file
     const maxSize = 10 * 1024 * 1024 // 10MB
     const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
 
@@ -70,7 +71,7 @@ export function TeamSection({ form }: TeamSectionProps) {
       return
     }
 
-    // 开始上传
+    // Start upload
     setUploadStates(prev => ({
       ...prev,
       [index]: { uploading: true, fileName: file.name }
@@ -107,7 +108,7 @@ export function TeamSection({ form }: TeamSectionProps) {
     <>
       <ToastContainer />
       <FormSection title={t.sections.team.title} description={t.sections.team.description}>
-        {/* 项目负责人信息 */}
+        {/* Project leader information */}
         <div className="space-y-8">
           <h3 className="font-semibold text-lg">{t.sections.team.leader}</h3>
 
@@ -208,11 +209,11 @@ export function TeamSection({ form }: TeamSectionProps) {
 
 
 
-        {/* 其他成员信息 */}
+        {/* Other member information */}
         <div className="space-y-8">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-lg">{t.sections.team.otherMembers}</h3>
-            <Button type="button" variant="outline" size="sm" onClick={addMember} className="rounded-full">
+            <Button type="button" variant="outline" size="sm" onClick={addMember} className="rounded-full text-sm">
               <Plus className="h-4 w-4 mr-1" />
               {t.sections.team.addMember}
             </Button>
@@ -231,7 +232,7 @@ export function TeamSection({ form }: TeamSectionProps) {
               {fields.map((field, index) => (
                 <div key={field.id} className="p-6 border border-border rounded-sm space-y-8 bg-background/50 hover:bg-muted/30 transition-colors">
                   <div className="flex items-center justify-between">
-                    <span className="font-medium font-mono">{t.sections.team.member} {index + 1}</span>
+                    <span className="font-bold font-mono">{t.sections.team.member} {index + 1}</span>
                     <Button
                       type="button"
                       variant="ghost"
@@ -263,13 +264,14 @@ export function TeamSection({ form }: TeamSectionProps) {
                       <FieldError message={errors.members?.[index]?.role?.message} />
                     </div>
                     <div className="space-y-2">
-                      <FieldLabel optionalHint={t.sections.team.resumeHint}>
+                      <FieldLabel required>
                         {t.sections.team.resume}
                       </FieldLabel>
 
                       {!uploadStates[index]?.fileName && !watch(`members.${index}.resumeS3Key`) ? (
-                        <div className="flex items-center gap-2">
-                          <Input
+                        <div className="space-y-2">
+                          <input
+                            ref={(el) => { fileInputRefs.current[index] = el }}
                             type="file"
                             accept=".pdf,.doc,.docx"
                             onChange={(e) => {
@@ -278,9 +280,25 @@ export function TeamSection({ form }: TeamSectionProps) {
                                 handleFileUpload(index, file)
                               }
                             }}
-                            disabled={uploadStates[index]?.uploading}
-                            className="cursor-pointer file:mr-4 file:py-1 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-all h-12"
+                            className="sr-only"
                           />
+                          <button
+                            type="button"
+                            onClick={() => fileInputRefs.current[index]?.click()}
+                            disabled={uploadStates[index]?.uploading}
+                            className="flex h-12 w-full items-center gap-3 rounded border border-input bg-background px-3 py-2 text-base transition-all hover:bg-muted/50 hover:border-input/80 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <span className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
+                              <Upload className="h-3.5 w-3.5" />
+                              {t.sections.team.chooseFile}
+                            </span>
+                            <span className="text-muted-foreground text-sm">
+                              {t.sections.team.noFileSelected}
+                            </span>
+                          </button>
+                          <p className="text-sm text-muted-foreground">
+                            {t.sections.team.resumeHint}
+                          </p>
                         </div>
                       ) : (
                         <div className="flex h-12 w-full items-center gap-3 rounded border border-input bg-muted/5 px-3 py-2 text-base text-foreground transition-all hover:bg-muted/20 hover:border-input/80">
@@ -309,7 +327,7 @@ export function TeamSection({ form }: TeamSectionProps) {
                         </div>
                       )}
 
-                      <FieldError message={uploadStates[index]?.error} />
+                      <FieldError message={uploadStates[index]?.error || errors.members?.[index]?.resumeS3Key?.message} />
                     </div>
                   </div>
                 </div>

@@ -14,7 +14,7 @@ export const createLeaderSchema = (t: Translations) => z.object({
 // 成员信息
 export const createMemberSchema = (t: Translations) => z.object({
   role: z.string().min(1, t.validation.roleRequired),
-  resumeS3Key: z.string().optional(), // S3 文件键，从上传接口获取
+  resumeS3Key: z.string().min(1, t.validation.resumeRequired), // S3 文件键，从上传接口获取
 })
 
 // 里程碑

@@ -5,6 +5,7 @@ import { ProjectForm } from '@/components/form/ProjectForm'
 import { HeaderBar } from '@/components/layout/HeaderBar'
 import { HeroSection } from '@/components/layout/HeroSection'
 import { PageLayout } from '@/components/layout/PageLayout'
+import DotGrid from '@/components/ui/DotGrid'
 
 
 
@@ -12,19 +13,39 @@ import { PageLayout } from '@/components/layout/PageLayout'
 function AppContent() {
   const { fillCode, clear } = useFillCode()
 
-  // 如果没有填写码，显示填写码输入页面
+  // Show fill-code input when no code is present
   if (!fillCode) {
-    return <FillCodeForm />
+    return (
+      <>
+        <DotGrid
+          dotSize={3}
+          gap={24}
+          baseColor="#d4d4d4"
+          activeColor="#737373"
+          proximity={100}
+        />
+        <FillCodeForm />
+      </>
+    )
   }
 
-  // 有填写码，显示项目申请表单
+  // Show the application form when a code is present
   return (
-    <PageLayout
-      header={<HeaderBar code={fillCode} onChange={clear} />}
-      hero={<HeroSection />}
-    >
-      <ProjectForm />
-    </PageLayout>
+    <>
+      <DotGrid
+        dotSize={3}
+        gap={24}
+        baseColor="#d4d4d4"
+        activeColor="#737373"
+        proximity={100}
+      />
+      <PageLayout
+        header={<HeaderBar code={fillCode} onChange={clear} />}
+        hero={<HeroSection />}
+      >
+        <ProjectForm />
+      </PageLayout>
+    </>
   )
 }
 

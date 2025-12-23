@@ -19,16 +19,16 @@ interface DatePickerProps {
 }
 
 export function DatePicker({ date, onSelect, placeholder }: DatePickerProps) {
-  const { language } = useTranslation()
+  const { language, t } = useTranslation()
   const locale = language === "en" ? enUS : zhCN
-  const defaultPlaceholder = language === "en" ? "Select date" : "选择日期"
+  const defaultPlaceholder = t.sections.basicInfo.selectDate
   return (
     <Popover>
       <PopoverTrigger asChild>
         <Button
           variant={"ghost"}
           className={cn(
-            "w-full justify-start text-left font-sans text-base text-gray-600 font-normal tracking-normal normal-case h-12 rounded border border-input bg-muted/5 px-3 transition-all hover:bg-muted/20 hover:border-input/80 hover:text-gray-600 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary",
+            "w-full justify-start text-left font-sans text-sm text-gray-600 font-normal tracking-normal normal-case h-12 rounded border border-input bg-muted/5 px-3 transition-all hover:bg-muted/20 hover:border-input/80 hover:text-gray-600 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary",
             !date && "text-muted-foreground"
           )}
         >
@@ -45,6 +45,6 @@ export function DatePicker({ date, onSelect, placeholder }: DatePickerProps) {
           locale={locale}
         />
       </PopoverContent>
-    </Popover>
+    </Popover >
   )
 }

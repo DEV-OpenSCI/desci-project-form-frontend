@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { UseFormReturn } from 'react-hook-form'
-import { Sparkles, Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -35,7 +35,7 @@ export function ProjectIntroSection({ form }: ProjectIntroSectionProps) {
     background: { parsing: false },
   })
   const { showToast, ToastContainer } = useToast()
-  const { t } = useTranslation()
+  const { t, language } = useTranslation()
 
   const fieldLabels = {
     introduction: t.sections.projectIntro.projectSummary,
@@ -46,7 +46,7 @@ export function ProjectIntroSection({ form }: ProjectIntroSectionProps) {
     fieldName: 'introduction' | 'background',
     formFieldName: 'projectSummary' | 'background'
   ) => {
-    // 创建文件选择器
+    // Create a file input for AI parsing
     const input = document.createElement('input')
     input.type = 'file'
     input.accept = '.pdf,.doc,.docx,.txt'
@@ -55,7 +55,7 @@ export function ProjectIntroSection({ form }: ProjectIntroSectionProps) {
       const file = (e.target as HTMLInputElement).files?.[0]
       if (!file) return
 
-      // 验证文件大小（最大 20MB）
+      // Validate file size (max 20MB)
       const maxSize = 20 * 1024 * 1024
       if (file.size > maxSize) {
         setAiParseState(prev => ({
@@ -66,14 +66,14 @@ export function ProjectIntroSection({ form }: ProjectIntroSectionProps) {
         return
       }
 
-      // 开始解析
+      // Start parsing
       setAiParseState(prev => ({
         ...prev,
         [fieldName]: { parsing: true, error: undefined }
       }))
 
       try {
-        const content = await parseDocument(file, fieldName)
+        const content = await parseDocument(file, fieldName, language)
         setValue(formFieldName, content)
         setAiParseState(prev => ({
           ...prev,
@@ -100,7 +100,7 @@ export function ProjectIntroSection({ form }: ProjectIntroSectionProps) {
     <>
       <ToastContainer />
       <FormSection title={t.sections.projectIntro.title} description={t.sections.projectIntro.description}>
-        {/* 项目简介 */}
+        {/* Project summary */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <FieldLabel htmlFor="projectSummary" required optionalHint={t.sections.projectIntro.projectSummaryHint}>
@@ -112,17 +112,19 @@ export function ProjectIntroSection({ form }: ProjectIntroSectionProps) {
               size="sm"
               onClick={() => handleAiParse('introduction', 'projectSummary')}
               disabled={aiParseState.introduction.parsing}
-              className="gap-2 rounded-full"
+              className="rounded-full pl-2 text-sm"
             >
               {aiParseState.introduction.parsing ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   {t.sections.projectIntro.aiParsing}
                 </>
               ) : (
                 <>
-                  <Sparkles className="h-4 w-4" />
-                  {t.sections.projectIntro.aiParse}
+                  <div className="flex items-center justify-center rounded-full bg-gray-200 w-7 h-7 mr-2.5">
+                    <span className="text-[10px] font-bold text-black">AI</span>
+                  </div>
+                  <span className="font-bold uppercase tracking-wide text-foreground">{t.sections.projectIntro.aiParse}</span>
                 </>
               )}
             </Button>
@@ -145,7 +147,7 @@ export function ProjectIntroSection({ form }: ProjectIntroSectionProps) {
           </div>
         </div>
 
-        {/* 实施的背景和意义 */}
+        {/* Background and significance */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <FieldLabel htmlFor="background" required optionalHint={t.sections.projectIntro.backgroundHint}>
@@ -157,17 +159,19 @@ export function ProjectIntroSection({ form }: ProjectIntroSectionProps) {
               size="sm"
               onClick={() => handleAiParse('background', 'background')}
               disabled={aiParseState.background.parsing}
-              className="gap-2 rounded-full"
+              className="rounded-full pl-2 text-sm"
             >
               {aiParseState.background.parsing ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   {t.sections.projectIntro.aiParsing}
                 </>
               ) : (
                 <>
-                  <Sparkles className="h-4 w-4" />
-                  {t.sections.projectIntro.aiParse}
+                  <div className="flex items-center justify-center rounded-full bg-gray-200 w-7 h-7 mr-2.5">
+                    <span className="text-[10px] font-bold text-black">AI</span>
+                  </div>
+                  <span className="font-bold uppercase tracking-wide text-foreground">{t.sections.projectIntro.aiParse}</span>
                 </>
               )}
             </Button>
@@ -190,7 +194,7 @@ export function ProjectIntroSection({ form }: ProjectIntroSectionProps) {
           </div>
         </div>
 
-        {/* 项目里程碑 */}
+        {/* Project milestones */}
         <div className="space-y-2">
           <div>
             <h3 className="font-semibold text-lg">{t.sections.projectIntro.milestones}</h3>
@@ -216,7 +220,7 @@ export function ProjectIntroSection({ form }: ProjectIntroSectionProps) {
                 </div>
 
                 <div className="p-6 border border-border rounded bg-muted/5 hover:bg-muted/20 transition-colors relative group space-y-8">
-                  {/* 起止时间 */}
+                  {/* Start and end dates */}
                   <div className="grid gap-8 md:grid-cols-2">
                     <div className="space-y-2">
                       <FieldLabel required>{t.sections.projectIntro.startTime}</FieldLabel>
@@ -238,7 +242,7 @@ export function ProjectIntroSection({ form }: ProjectIntroSectionProps) {
                     </div>
                   </div>
 
-                  {/* 主要研究内容 */}
+                  {/* Main research content */}
                   <div className="space-y-2">
                     <FieldLabel required>{t.sections.projectIntro.mainContent}</FieldLabel>
                     <Input
@@ -248,7 +252,7 @@ export function ProjectIntroSection({ form }: ProjectIntroSectionProps) {
                     <FieldError message={errors.milestones?.[index]?.content?.message} />
                   </div>
 
-                  {/* 预期目标 */}
+                  {/* Expected goals */}
                   <div className="space-y-2">
                     <FieldLabel required>{t.sections.projectIntro.expectedGoals}</FieldLabel>
                     <Textarea
@@ -259,7 +263,7 @@ export function ProjectIntroSection({ form }: ProjectIntroSectionProps) {
                     <FieldError message={errors.milestones?.[index]?.goals?.message} />
                   </div>
 
-                  {/* 隐藏的 stage 字段 */}
+                  {/* Hidden stage field */}
                   <input type="hidden" {...register(`milestones.${index}.stage`)} value={stage.value} />
                 </div>
               </div>

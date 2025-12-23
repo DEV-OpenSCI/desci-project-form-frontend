@@ -13,7 +13,7 @@ export function LanguageSwitcher() {
             className="gap-2 font-mono font-bold"
         >
             <Languages className="h-4 w-4" />
-            {language === 'en' ? 'EN' : '中文'}
+            {language === 'en' ? 'EN' : 'ZH'}
         </Button>
     )
 }

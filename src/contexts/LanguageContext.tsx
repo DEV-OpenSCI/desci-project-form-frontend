@@ -12,9 +12,11 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
     const [language, setLanguage] = useState<Language>(() => {
-        if (typeof window === 'undefined') return 'zh'
+        if (typeof window === 'undefined') return 'en'
         const stored = window.localStorage.getItem('language')
-        return stored === 'en' ? 'en' : 'zh'
+        if (stored === 'en' || stored === 'zh') return stored
+        const browserLang = window.navigator.language || ''
+        return browserLang.toLowerCase().startsWith('zh') ? 'zh' : 'en'
     })
 
     const toggleLanguage = () => {

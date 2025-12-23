@@ -17,7 +17,7 @@ export function ContactSection({ form }: ContactSectionProps) {
   return (
     <FormSection title={t.sections.contact.title} description={t.sections.contact.description}>
       <div className="grid gap-8 md:grid-cols-3">
-        {/* 姓名 */}
+        {/* Name */}
         <div className="space-y-2">
           <FieldLabel htmlFor="contact.name" required>
             {t.sections.contact.name}
@@ -30,7 +30,7 @@ export function ContactSection({ form }: ContactSectionProps) {
           <FieldError message={errors.contact?.name?.message} />
         </div>
 
-        {/* 联系邮箱 */}
+        {/* Email */}
         <div className="space-y-2">
           <FieldLabel htmlFor="contact.email" required>
             {t.sections.contact.email}
@@ -44,7 +44,7 @@ export function ContactSection({ form }: ContactSectionProps) {
           <FieldError message={errors.contact?.email?.message} />
         </div>
 
-        {/* 联系电话 */}
+        {/* Phone */}
         <div className="space-y-2">
           <FieldLabel htmlFor="contact.phone" required>
             {t.sections.contact.phone}

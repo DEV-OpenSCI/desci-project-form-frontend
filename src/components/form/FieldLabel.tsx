@@ -18,10 +18,10 @@ export function FieldLabel({
   children,
 }: FieldLabelProps) {
   return (
-    <Label htmlFor={htmlFor} className={cn('flex flex-wrap items-center gap-2', className)}>
+    <Label htmlFor={htmlFor} className={cn('flex flex-wrap items-center gap-2 leading-normal', className)}>
       <span>{children}</span>
       {required && <span className="text-destructive">*</span>}
-      {optionalHint && <span className="text-muted-foreground text-sm">{optionalHint}</span>}
+      {optionalHint && <span className="text-muted-foreground font-normal">{optionalHint}</span>}
     </Label>
   )
 }

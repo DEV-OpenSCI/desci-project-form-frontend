@@ -1,4 +1,4 @@
-import { Clock, Hourglass } from "lucide-react"
+import { Clock } from "lucide-react"
 
 type ExpireBadgeProps = {
   expireTime?: string
