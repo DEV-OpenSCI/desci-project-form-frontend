@@ -1,6 +1,7 @@
 import * as React from "react"
 import * as SelectPrimitive from "@radix-ui/react-select"
-import { Check, ChevronDown, ChevronUp } from "lucide-react"
+import * as TooltipPrimitive from "@radix-ui/react-tooltip"
+import { Check, ChevronDown, ChevronUp, Info } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
@@ -131,6 +132,55 @@ const SelectItem = React.forwardRef<
 ))
 SelectItem.displayName = SelectPrimitive.Item.displayName
 
+// SelectItem with tooltip for description
+interface SelectItemWithTooltipProps extends React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item> {
+  description?: string
+}
+
+const SelectItemWithTooltip = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.Item>,
+  SelectItemWithTooltipProps
+>(({ className, children, description, ...props }, ref) => (
+  <SelectPrimitive.Item
+    ref={ref}
+    className={cn(
+      "relative flex w-full cursor-default select-none items-center rounded py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 font-normal group",
+      className
+    )}
+    {...props}
+  >
+    <span className="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
+      <SelectPrimitive.ItemIndicator>
+        <Check className="h-4 w-4" />
+      </SelectPrimitive.ItemIndicator>
+    </span>
+    <span className="flex items-center gap-1.5">
+      <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+      {description && (
+        <TooltipPrimitive.Provider delayDuration={0}>
+          <TooltipPrimitive.Root>
+            <TooltipPrimitive.Trigger asChild>
+              <span className="inline-flex cursor-help" onClick={(e) => e.stopPropagation()}>
+                <Info className="h-3.5 w-3.5 text-muted-foreground opacity-20 hover:opacity-100 transition-opacity" />
+              </span>
+            </TooltipPrimitive.Trigger>
+            <TooltipPrimitive.Portal>
+              <TooltipPrimitive.Content
+                side="right"
+                sideOffset={8}
+                className="z-[200] max-w-xs rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground shadow-md animate-in fade-in-0 zoom-in-95"
+              >
+                {description}
+              </TooltipPrimitive.Content>
+            </TooltipPrimitive.Portal>
+          </TooltipPrimitive.Root>
+        </TooltipPrimitive.Provider>
+      )}
+    </span>
+  </SelectPrimitive.Item>
+))
+SelectItemWithTooltip.displayName = "SelectItemWithTooltip"
+
 const SelectSeparator = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Separator>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Separator>
@@ -151,6 +201,7 @@ export {
   SelectContent,
   SelectLabel,
   SelectItem,
+  SelectItemWithTooltip,
   SelectSeparator,
   SelectScrollUpButton,
   SelectScrollDownButton,

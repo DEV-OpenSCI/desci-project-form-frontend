@@ -1,20 +1,15 @@
 import { UseFormReturn, useFieldArray } from 'react-hook-form'
-import { Plus, Trash2, HelpCircle } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import {
   Select,
   SelectContent,
-  SelectItem,
+  SelectItemWithTooltip,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
+
 import { FieldLabel } from '@/components/form/FieldLabel'
 import { FieldError } from '@/components/form/FieldError'
 import { FormSection } from '@/components/form/FormSection'
@@ -96,9 +91,9 @@ export function BudgetSection({ form }: BudgetSectionProps) {
                       </SelectTrigger>
                       <SelectContent>
                         {t.options.budgetCategories.map((item) => (
-                          <SelectItem key={item.value} value={item.value} title={item.description}>
+                          <SelectItemWithTooltip key={item.value} value={item.value} description={item.description}>
                             {item.label}
-                          </SelectItem>
+                          </SelectItemWithTooltip>
                         ))}
                       </SelectContent>
                     </Select>
@@ -109,8 +104,9 @@ export function BudgetSection({ form }: BudgetSectionProps) {
                   <div className="flex flex-col gap-2">
                     <FieldLabel className="md:hidden">{t.sections.budget.donation}</FieldLabel>
                     <Input
-                      type="number"
-                      min={0}
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       placeholder="0"
                       {...register(`budgetItems.${index}.donationAmount`, { valueAsNumber: true })}
                       className="font-mono bg-transparent text-sm"
@@ -122,8 +118,9 @@ export function BudgetSection({ form }: BudgetSectionProps) {
                   <div className="flex flex-col gap-2">
                     <FieldLabel className="md:hidden">{t.sections.budget.selfFunded}</FieldLabel>
                     <Input
-                      type="number"
-                      min={0}
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       placeholder="0"
                       {...register(`budgetItems.${index}.selfFundedAmount`, { valueAsNumber: true })}
                       className="font-mono bg-transparent text-sm"
@@ -133,7 +130,7 @@ export function BudgetSection({ form }: BudgetSectionProps) {
 
                   {/* Subtotal */}
                   <div className="hidden md:flex items-center justify-end md:pr-8 h-12 font-mono font-medium text-foreground text-sm">
-                    {((watch(`budgetItems.${index}.donationAmount`) || 0) + (watch(`budgetItems.${index}.selfFundedAmount`) || 0)).toLocaleString()}
+                    {t.sections.budget.yuan} {((watch(`budgetItems.${index}.donationAmount`) || 0) + (watch(`budgetItems.${index}.selfFundedAmount`) || 0)).toLocaleString()}
                   </div>
 
                   {/* Remove button */}
@@ -158,9 +155,9 @@ export function BudgetSection({ form }: BudgetSectionProps) {
             <div className="grid gap-4 md:grid-cols-[3rem_1.3fr_1fr_1fr_1fr_2.5rem] items-center py-4 font-medium">
               <div className="w-12"></div>
               <div className="font-medium uppercase tracking-widest text-sm">{t.sections.budget.tableTotal}</div>
-              <div className="text-primary font-mono font-medium text-sm">{totalDonation.toLocaleString()} {t.sections.budget.yuan}</div>
-              <div className="text-primary font-mono font-medium text-sm">{totalSelfFund.toLocaleString()} {t.sections.budget.yuan}</div>
-              <div className="text-right text-primary font-mono font-medium text-sm md:pr-8">{total.toLocaleString()} {t.sections.budget.yuan}</div>
+              <div className="text-primary font-mono font-medium text-sm">{t.sections.budget.yuan} {totalDonation.toLocaleString()}</div>
+              <div className="text-primary font-mono font-medium text-sm">{t.sections.budget.yuan} {totalSelfFund.toLocaleString()}</div>
+              <div className="text-right text-primary font-mono font-medium text-sm md:pr-8">{t.sections.budget.yuan} {total.toLocaleString()}</div>
               <div className="w-10"></div>
             </div>
           )}
@@ -169,7 +166,7 @@ export function BudgetSection({ form }: BudgetSectionProps) {
         {fields.length > 0 && (
           <div className="space-y-2 text-right pt-2">
             <div className="text-sm font-medium">
-              {t.sections.budget.donationTotal}<span className="text-blue-700 font-mono text-sm">{totalDonation.toLocaleString()} {t.sections.budget.yuan}</span>
+              {t.sections.budget.donationTotal}<span className="text-blue-700 font-mono text-sm">{t.sections.budget.yuan} {totalDonation.toLocaleString()}</span>
             </div>
           </div>
         )}

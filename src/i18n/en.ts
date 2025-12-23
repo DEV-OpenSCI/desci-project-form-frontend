@@ -98,7 +98,7 @@ export const en = {
             tableCategory: 'Category',
             tableDonation: 'Donation ($)',
             tableSelfFunded: 'Self-Funded ($)',
-            tableSubtotal: 'Subtotal',
+            tableSubtotal: 'Subtotal ($)',
             tableTotal: 'Total Budget',
         },
         contact: {
