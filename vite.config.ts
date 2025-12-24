@@ -21,20 +21,15 @@ export default defineConfig({
         manualChunks(id) {
           if (!id.includes('node_modules')) return undefined
 
-          if (id.includes('react') || id.includes('react-dom')) {
+          // React 核心和所有依赖 React 的 UI 库放在一起
+          if (id.includes('react') || id.includes('react-dom') || id.includes('@radix-ui') || id.includes('lucide-react')) {
             return 'react'
-          }
-          if (id.includes('@radix-ui')) {
-            return 'radix'
           }
           if (id.includes('react-hook-form') || id.includes('@hookform/resolvers') || id.includes('zod')) {
             return 'forms'
           }
           if (id.includes('date-fns') || id.includes('react-day-picker')) {
             return 'dates'
-          }
-          if (id.includes('lucide-react')) {
-            return 'icons'
           }
 
           return 'vendor'
