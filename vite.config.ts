@@ -21,14 +21,24 @@ export default defineConfig({
         manualChunks(id) {
           if (!id.includes('node_modules')) return undefined
 
-          // React 核心和所有依赖 React 的 UI 库放在一起
-          if (id.includes('react') || id.includes('react-dom') || id.includes('@radix-ui') || id.includes('lucide-react')) {
+          // React 核心及所有依赖 React hooks 的库放在一起
+          if (
+            id.includes('react') ||
+            id.includes('react-dom') ||
+            id.includes('scheduler') ||
+            id.includes('@radix-ui') ||
+            id.includes('lucide-react') ||
+            id.includes('react-day-picker') ||
+            id.includes('use-callback-ref') ||
+            id.includes('use-sidecar') ||
+            id.includes('@floating-ui')
+          ) {
             return 'react'
           }
           if (id.includes('react-hook-form') || id.includes('@hookform/resolvers') || id.includes('zod')) {
             return 'forms'
           }
-          if (id.includes('date-fns') || id.includes('react-day-picker')) {
+          if (id.includes('date-fns')) {
             return 'dates'
           }
 
