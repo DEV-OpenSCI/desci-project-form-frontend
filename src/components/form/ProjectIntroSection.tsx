@@ -1,16 +1,17 @@
 import { useState } from 'react'
 import { UseFormReturn } from 'react-hook-form'
-import { Sparkles, Loader2 } from 'lucide-react'
-import { Label } from '@/components/ui/label'
+import { Loader2 } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { DatePicker } from '@/components/ui/date-picker'
 import { useToast } from '@/components/ui/toast'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { MILESTONE_STAGES } from '@/lib/constants'
+import { FieldLabel } from '@/components/form/FieldLabel'
+import { FieldError } from '@/components/form/FieldError'
+import { FormSection } from '@/components/form/FormSection'
 import type { ProjectFormData } from '@/types/form'
 import { parseDocument } from '@/services/aiApi'
+import { useTranslation } from '@/i18n'
 
 interface ProjectIntroSectionProps {
   form: UseFormReturn<ProjectFormData>
@@ -34,17 +35,18 @@ export function ProjectIntroSection({ form }: ProjectIntroSectionProps) {
     background: { parsing: false },
   })
   const { showToast, ToastContainer } = useToast()
+  const { t, language } = useTranslation()
 
   const fieldLabels = {
-    introduction: '项目简介',
-    background: '背景和意义',
+    introduction: t.sections.projectIntro.projectSummary,
+    background: t.sections.projectIntro.background,
   }
 
   const handleAiParse = async (
     fieldName: 'introduction' | 'background',
     formFieldName: 'projectSummary' | 'background'
   ) => {
-    // 创建文件选择器
+    // Create a file input for AI parsing
     const input = document.createElement('input')
     input.type = 'file'
     input.accept = '.pdf,.doc,.docx,.txt'
@@ -53,33 +55,33 @@ export function ProjectIntroSection({ form }: ProjectIntroSectionProps) {
       const file = (e.target as HTMLInputElement).files?.[0]
       if (!file) return
 
-      // 验证文件大小（最大 20MB）
+      // Validate file size (max 20MB)
       const maxSize = 20 * 1024 * 1024
       if (file.size > maxSize) {
         setAiParseState(prev => ({
           ...prev,
-          [fieldName]: { parsing: false, error: '文件大小不能超过 20MB' }
+          [fieldName]: { parsing: false, error: t.messages.fileTooLarge20 }
         }))
-        showToast('文件大小不能超过 20MB', 'error')
+        showToast(t.messages.fileTooLarge20, 'error')
         return
       }
 
-      // 开始解析
+      // Start parsing
       setAiParseState(prev => ({
         ...prev,
         [fieldName]: { parsing: true, error: undefined }
       }))
 
       try {
-        const content = await parseDocument(file, fieldName)
+        const content = await parseDocument(file, fieldName, language)
         setValue(formFieldName, content)
         setAiParseState(prev => ({
           ...prev,
           [fieldName]: { parsing: false }
         }))
-        showToast(`${fieldLabels[fieldName]}解析成功`, 'success')
+        showToast(t.messages.parseSuccess.replace('{field}', fieldLabels[fieldName]), 'success')
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'AI 解析失败，请重试'
+        const errorMessage = error instanceof Error ? error.message : t.messages.aiParseFailed
         setAiParseState(prev => ({
           ...prev,
           [fieldName]: {
@@ -97,204 +99,178 @@ export function ProjectIntroSection({ form }: ProjectIntroSectionProps) {
   return (
     <>
       <ToastContainer />
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl">项目介绍</CardTitle>
-          <CardDescription>描述项目的科学问题、背景意义和里程碑规划</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-8">
-        {/* 项目简介 */}
+      <FormSection title={t.sections.projectIntro.title} description={t.sections.projectIntro.description}>
+        {/* Project summary */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="projectSummary">
-              项目简介 <span className="text-destructive">*</span>
-              <span className="text-muted-foreground text-xs ml-2">（限1500字内）</span>
-            </Label>
+            <FieldLabel htmlFor="projectSummary" required optionalHint={t.sections.projectIntro.projectSummaryHint}>
+              {t.sections.projectIntro.projectSummary}
+            </FieldLabel>
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => handleAiParse('introduction', 'projectSummary')}
               disabled={aiParseState.introduction.parsing}
-              className="gap-2"
+              className="rounded-full pl-2 text-sm"
             >
               {aiParseState.introduction.parsing ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  AI 解析中...
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  {t.sections.projectIntro.aiParsing}
                 </>
               ) : (
                 <>
-                  <Sparkles className="h-4 w-4" />
-                  AI 解析文档
+                  <div className="flex items-center justify-center rounded-full bg-gray-200 w-7 h-7 mr-2.5">
+                    <span className="text-[10px] font-bold text-black">AI</span>
+                  </div>
+                  <span className="font-bold uppercase tracking-wide text-foreground">{t.sections.projectIntro.aiParse}</span>
                 </>
               )}
             </Button>
           </div>
           <Textarea
             id="projectSummary"
-            placeholder="介绍目前存在的科学问题，可以通过什么手段解决此问题"
+            placeholder={t.sections.projectIntro.projectSummaryPlaceholder}
             className="min-h-[160px]"
             maxLength={1500}
             {...register('projectSummary')}
           />
           <div className="flex items-center justify-between">
             <div>
-              {aiParseState.introduction.error && (
-                <p className="text-sm text-destructive">{aiParseState.introduction.error}</p>
-              )}
-              {errors.projectSummary && (
-                <p className="text-sm text-destructive">{errors.projectSummary.message}</p>
-              )}
+              <FieldError message={aiParseState.introduction.error} />
+              <FieldError message={errors.projectSummary?.message} />
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               {watch('projectSummary')?.length || 0}/1500
             </p>
           </div>
         </div>
 
-        {/* 实施的背景和意义 */}
+        {/* Background and significance */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="background">
-              实施的背景和意义 <span className="text-destructive">*</span>
-              <span className="text-muted-foreground text-xs ml-2">（限1500字内）</span>
-            </Label>
+            <FieldLabel htmlFor="background" required optionalHint={t.sections.projectIntro.backgroundHint}>
+              {t.sections.projectIntro.background}
+            </FieldLabel>
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => handleAiParse('background', 'background')}
               disabled={aiParseState.background.parsing}
-              className="gap-2"
+              className="rounded-full pl-2 text-sm"
             >
               {aiParseState.background.parsing ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  AI 解析中...
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  {t.sections.projectIntro.aiParsing}
                 </>
               ) : (
                 <>
-                  <Sparkles className="h-4 w-4" />
-                  AI 解析文档
+                  <div className="flex items-center justify-center rounded-full bg-gray-200 w-7 h-7 mr-2.5">
+                    <span className="text-[10px] font-bold text-black">AI</span>
+                  </div>
+                  <span className="font-bold uppercase tracking-wide text-foreground">{t.sections.projectIntro.aiParse}</span>
                 </>
               )}
             </Button>
           </div>
           <Textarea
             id="background"
-            placeholder="概述项目所面向的经济、社会和科技发展等有效需求，项目的先进性、重要性、必要性、可行性以及在行业发展中的地位和作用；预期实现的经济和社会效益等方面"
+            placeholder={t.sections.projectIntro.backgroundPlaceholder}
             className="min-h-[160px]"
             maxLength={1500}
             {...register('background')}
           />
           <div className="flex items-center justify-between">
             <div>
-              {aiParseState.background.error && (
-                <p className="text-sm text-destructive">{aiParseState.background.error}</p>
-              )}
-              {errors.background && (
-                <p className="text-sm text-destructive">{errors.background.message}</p>
-              )}
+              <FieldError message={aiParseState.background.error} />
+              <FieldError message={errors.background?.message} />
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               {watch('background')?.length || 0}/1500
             </p>
           </div>
         </div>
 
-        {/* 项目里程碑 */}
-        <div className="space-y-4">
+        {/* Project milestones */}
+        <div className="space-y-2">
           <div>
-            <h3 className="font-semibold text-lg border-l-4 border-primary pl-3">项目里程碑</h3>
-            <p className="text-sm text-muted-foreground mt-1">每个项目分为三个阶段：初期、中期、末期</p>
+            <h3 className="font-semibold text-lg">{t.sections.projectIntro.milestones}</h3>
+            <p className="text-sm text-muted-foreground mt-1">{t.sections.projectIntro.milestonesDesc}</p>
           </div>
 
-          <div className="space-y-6">
-            {MILESTONE_STAGES.map((stage, index) => (
-              <div key={stage.value} className="p-4 border rounded-lg space-y-4 bg-muted/30">
-                <div className="flex items-center gap-2">
-                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-sm font-medium">
-                    {index + 1}
-                  </span>
-                  <span className="font-medium">{stage.label}阶段</span>
+          <div className="relative pl-8 ml-4 border-l-2 border-transparent space-y-12">
+            {/* Custom Timeline Line */}
+            <div className="absolute -left-[1px] top-4 bottom-0 w-px border-l-2 border-dashed border-primary/15" />
+
+            {t.options.milestoneStages.map((stage, index) => (
+              <div key={stage.value} className="relative">
+                {/* Timeline Dot */}
+                <span className="absolute -left-[49px] top-0 flex items-center justify-center w-8 h-8 rounded-full bg-blue-700 text-white text-base font-bold font-mono border-4 border-background z-10 ring-1 ring-blue-700/20">
+                  {index + 1}
+                </span>
+
+                {/* Stage Title - Aligned with Dot */}
+                <div className="h-8 flex items-center mb-4">
+                  <h4 className="font-bold text-lg text-foreground">
+                    {stage.label} {t.sections.projectIntro.stage}
+                  </h4>
                 </div>
 
-                {/* 起止时间 */}
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label>
-                      开始时间 <span className="text-destructive">*</span>
-                    </Label>
-                    <DatePicker
-                      date={watch(`milestones.${index}.startDate`)}
-                      onSelect={(date) => setValue(`milestones.${index}.startDate`, date as Date)}
-                      placeholder="选择开始日期"
-                    />
-                    {errors.milestones?.[index]?.startDate && (
-                      <p className="text-sm text-destructive">
-                        {errors.milestones[index]?.startDate?.message}
-                      </p>
-                    )}
+                <div className="p-6 border border-border rounded bg-muted/5 hover:bg-muted/20 transition-colors relative group space-y-8">
+                  {/* Start and end dates */}
+                  <div className="grid gap-8 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <FieldLabel required>{t.sections.projectIntro.startTime}</FieldLabel>
+                      <DatePicker
+                        date={watch(`milestones.${index}.startDate`)}
+                        onSelect={(date) => setValue(`milestones.${index}.startDate`, date as Date)}
+                        placeholder={t.sections.basicInfo.selectDate}
+                      />
+                      <FieldError message={errors.milestones?.[index]?.startDate?.message} />
+                    </div>
+                    <div className="space-y-2">
+                      <FieldLabel required>{t.sections.projectIntro.endTime}</FieldLabel>
+                      <DatePicker
+                        date={watch(`milestones.${index}.endDate`)}
+                        onSelect={(date) => setValue(`milestones.${index}.endDate`, date as Date)}
+                        placeholder={t.sections.basicInfo.selectDate}
+                      />
+                      <FieldError message={errors.milestones?.[index]?.endDate?.message} />
+                    </div>
                   </div>
+
+                  {/* Main research content */}
                   <div className="space-y-2">
-                    <Label>
-                      结束时间 <span className="text-destructive">*</span>
-                    </Label>
-                    <DatePicker
-                      date={watch(`milestones.${index}.endDate`)}
-                      onSelect={(date) => setValue(`milestones.${index}.endDate`, date as Date)}
-                      placeholder="选择结束日期"
+                    <FieldLabel required>{t.sections.projectIntro.mainContent}</FieldLabel>
+                    <Input
+                      placeholder={t.sections.projectIntro.mainContentPlaceholder}
+                      {...register(`milestones.${index}.content`)}
                     />
-                    {errors.milestones?.[index]?.endDate && (
-                      <p className="text-sm text-destructive">
-                        {errors.milestones[index]?.endDate?.message}
-                      </p>
-                    )}
+                    <FieldError message={errors.milestones?.[index]?.content?.message} />
                   </div>
-                </div>
 
-                {/* 主要研究内容 */}
-                <div className="space-y-2">
-                  <Label>
-                    主要研究内容 <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    placeholder={`请简述${stage.label}阶段的研究内容`}
-                    {...register(`milestones.${index}.content`)}
-                  />
-                  {errors.milestones?.[index]?.content && (
-                    <p className="text-sm text-destructive">
-                      {errors.milestones[index]?.content?.message}
-                    </p>
-                  )}
-                </div>
+                  {/* Expected goals */}
+                  <div className="space-y-2">
+                    <FieldLabel required>{t.sections.projectIntro.expectedGoals}</FieldLabel>
+                    <Textarea
+                      placeholder={t.sections.projectIntro.expectedGoalsPlaceholder}
+                      className="min-h-[80px]"
+                      {...register(`milestones.${index}.goals`)}
+                    />
+                    <FieldError message={errors.milestones?.[index]?.goals?.message} />
+                  </div>
 
-                {/* 预期目标 */}
-                <div className="space-y-2">
-                  <Label>
-                    预期目标 <span className="text-destructive">*</span>
-                  </Label>
-                  <Textarea
-                    placeholder="详述该阶段研究的目标，目标应该符合SMART原则（比如项目预计产生论文数/发明专利/实用新型专利/PCT），每行一个目标"
-                    className="min-h-[80px]"
-                    {...register(`milestones.${index}.goals`)}
-                  />
-                  {errors.milestones?.[index]?.goals && (
-                    <p className="text-sm text-destructive">
-                      {errors.milestones[index]?.goals?.message}
-                    </p>
-                  )}
+                  {/* Hidden stage field */}
+                  <input type="hidden" {...register(`milestones.${index}.stage`)} value={stage.value} />
                 </div>
-
-                {/* 隐藏的 stage 字段 */}
-                <input type="hidden" {...register(`milestones.${index}.stage`)} value={stage.value} />
               </div>
             ))}
           </div>
         </div>
-        </CardContent>
-      </Card>
+      </FormSection>
     </>
   )
 }

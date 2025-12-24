@@ -1,6 +1,5 @@
 import { UseFormReturn } from 'react-hook-form'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -9,9 +8,11 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { DatePicker } from '@/components/ui/date-picker'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { DISCIPLINES, RESEARCH_FIELDS } from '@/lib/constants'
+import { FieldLabel } from '@/components/form/FieldLabel'
+import { FieldError } from '@/components/form/FieldError'
+import { FormSection } from '@/components/form/FormSection'
 import type { ProjectFormData } from '@/types/form'
+import { useTranslation } from '@/i18n'
 
 interface BasicInfoSectionProps {
   form: UseFormReturn<ProjectFormData>
@@ -19,125 +20,101 @@ interface BasicInfoSectionProps {
 
 export function BasicInfoSection({ form }: BasicInfoSectionProps) {
   const { register, setValue, watch, formState: { errors } } = form
+  const { t } = useTranslation()
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xl">项目基本信息</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* 项目名称 */}
+    <FormSection title={t.sections.basicInfo.title}>
+      {/* Project name */}
+      <div className="space-y-2">
+        <FieldLabel htmlFor="projectName" required>
+          {t.sections.basicInfo.projectName}
+        </FieldLabel>
+        <Input
+          id="projectName"
+          placeholder={t.sections.basicInfo.projectNamePlaceholder}
+          {...register('projectName')}
+        />
+        <FieldError message={errors.projectName?.message} />
+      </div>
+
+      {/* Expected start/end dates */}
+      <div className="grid gap-8 md:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="projectName">
-            项目名称 <span className="text-destructive">*</span>
-          </Label>
-          <Input
-            id="projectName"
-            placeholder="请输入项目名称"
-            {...register('projectName')}
+          <FieldLabel required>{t.sections.basicInfo.startDate}</FieldLabel>
+          <DatePicker
+            date={watch('startDate')}
+            onSelect={(date) => setValue('startDate', date as Date)}
+            placeholder={t.sections.basicInfo.selectDate}
           />
-          {errors.projectName && (
-            <p className="text-sm text-destructive">{errors.projectName.message}</p>
-          )}
+          <FieldError message={errors.startDate?.message} />
         </div>
-
-        {/* 预期起止时间 */}
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2">
-            <Label>
-              预期开始时间 <span className="text-destructive">*</span>
-            </Label>
-            <DatePicker
-              date={watch('startDate')}
-              onSelect={(date) => setValue('startDate', date as Date)}
-              placeholder="选择开始日期"
-            />
-            {errors.startDate && (
-              <p className="text-sm text-destructive">{errors.startDate.message}</p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label>
-              预期结束时间 <span className="text-destructive">*</span>
-            </Label>
-            <DatePicker
-              date={watch('endDate')}
-              onSelect={(date) => setValue('endDate', date as Date)}
-              placeholder="选择结束日期"
-            />
-            {errors.endDate && (
-              <p className="text-sm text-destructive">{errors.endDate.message}</p>
-            )}
-          </div>
-        </div>
-
-        {/* 所属专项和领域 */}
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2">
-            <Label>
-              所属专项（一级学科） <span className="text-destructive">*</span>
-            </Label>
-            <Select
-              value={watch('discipline')}
-              onValueChange={(value) => setValue('discipline', value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="请选择所属专项" />
-              </SelectTrigger>
-              <SelectContent>
-                {DISCIPLINES.map((item) => (
-                  <SelectItem key={item.value} value={item.value}>
-                    {item.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.discipline && (
-              <p className="text-sm text-destructive">{errors.discipline.message}</p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label>
-              所属领域 <span className="text-destructive">*</span>
-            </Label>
-            <Select
-              value={watch('field')}
-              onValueChange={(value) => setValue('field', value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="请选择所属领域" />
-              </SelectTrigger>
-              <SelectContent>
-                {RESEARCH_FIELDS.map((item) => (
-                  <SelectItem key={item.value} value={item.value}>
-                    {item.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.field && (
-              <p className="text-sm text-destructive">{errors.field.message}</p>
-            )}
-          </div>
-        </div>
-
-        {/* 项目人数 */}
-        <div className="space-y-2 md:w-1/2">
-          <Label htmlFor="teamSize">
-            项目人数 <span className="text-destructive">*</span>
-          </Label>
-          <Input
-            id="teamSize"
-            type="number"
-            min={1}
-            placeholder="请输入项目人数"
-            {...register('teamSize', { valueAsNumber: true })}
+        <div className="space-y-2">
+          <FieldLabel required>{t.sections.basicInfo.endDate}</FieldLabel>
+          <DatePicker
+            date={watch('endDate')}
+            onSelect={(date) => setValue('endDate', date as Date)}
+            placeholder={t.sections.basicInfo.selectDate}
           />
-          {errors.teamSize && (
-            <p className="text-sm text-destructive">{errors.teamSize.message}</p>
-          )}
+          <FieldError message={errors.endDate?.message} />
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      {/* Discipline and field */}
+      <div className="grid gap-8 md:grid-cols-2">
+        <div className="space-y-2">
+          <FieldLabel required>{t.sections.basicInfo.discipline}</FieldLabel>
+          <Select
+            value={watch('discipline')}
+            onValueChange={(value) => setValue('discipline', value)}
+          >
+            <SelectTrigger className={!watch('discipline') ? "text-muted-foreground" : ""}>
+              <SelectValue placeholder={t.sections.basicInfo.disciplinePlaceholder} />
+            </SelectTrigger>
+            <SelectContent>
+              {t.options.disciplines.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <FieldError message={errors.discipline?.message} />
+        </div>
+        <div className="space-y-2">
+          <FieldLabel required>{t.sections.basicInfo.field}</FieldLabel>
+          <Select
+            value={watch('field')}
+            onValueChange={(value) => setValue('field', value)}
+          >
+            <SelectTrigger className={!watch('field') ? "text-muted-foreground" : ""}>
+              <SelectValue placeholder={t.sections.basicInfo.fieldPlaceholder} />
+            </SelectTrigger>
+            <SelectContent>
+              {t.options.researchFields.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <FieldError message={errors.field?.message} />
+        </div>
+      </div>
+
+      {/* Team size */}
+      <div className="space-y-2 md:w-1/2">
+        <FieldLabel htmlFor="teamSize" required>
+          {t.sections.basicInfo.teamSize}
+        </FieldLabel>
+        <Input
+          id="teamSize"
+          type="number"
+          min={1}
+          placeholder={t.sections.basicInfo.teamSizePlaceholder}
+          {...register('teamSize', { valueAsNumber: true })}
+        />
+        <FieldError message={errors.teamSize?.message} />
+      </div>
+    </FormSection>
   )
 }

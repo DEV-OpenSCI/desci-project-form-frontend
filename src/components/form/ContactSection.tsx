@@ -1,8 +1,10 @@
 import { UseFormReturn } from 'react-hook-form'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { FieldLabel } from '@/components/form/FieldLabel'
+import { FieldError } from '@/components/form/FieldError'
+import { FormSection } from '@/components/form/FormSection'
 import type { ProjectFormData } from '@/types/form'
+import { useTranslation } from '@/i18n'
 
 interface ContactSectionProps {
   form: UseFormReturn<ProjectFormData>
@@ -10,63 +12,52 @@ interface ContactSectionProps {
 
 export function ContactSection({ form }: ContactSectionProps) {
   const { register, formState: { errors } } = form
+  const { t } = useTranslation()
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xl">项目联系人</CardTitle>
-        <CardDescription>填写项目联系人的信息，用于后续沟通联络</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="grid gap-6 md:grid-cols-3">
-          {/* 姓名 */}
-          <div className="space-y-2">
-            <Label htmlFor="contact.name">
-              姓名 <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="contact.name"
-              placeholder="请输入联系人姓名"
-              {...register('contact.name')}
-            />
-            {errors.contact?.name && (
-              <p className="text-sm text-destructive">{errors.contact.name.message}</p>
-            )}
-          </div>
-
-          {/* 联系邮箱 */}
-          <div className="space-y-2">
-            <Label htmlFor="contact.email">
-              联系邮箱 <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="contact.email"
-              type="email"
-              placeholder="请输入联系邮箱"
-              {...register('contact.email')}
-            />
-            {errors.contact?.email && (
-              <p className="text-sm text-destructive">{errors.contact.email.message}</p>
-            )}
-          </div>
-
-          {/* 联系电话 */}
-          <div className="space-y-2">
-            <Label htmlFor="contact.phone">
-              联系电话 <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="contact.phone"
-              type="tel"
-              placeholder="请输入联系电话"
-              {...register('contact.phone')}
-            />
-            {errors.contact?.phone && (
-              <p className="text-sm text-destructive">{errors.contact.phone.message}</p>
-            )}
-          </div>
+    <FormSection title={t.sections.contact.title} description={t.sections.contact.description}>
+      <div className="grid gap-8 md:grid-cols-3">
+        {/* Name */}
+        <div className="space-y-2">
+          <FieldLabel htmlFor="contact.name" required>
+            {t.sections.contact.name}
+          </FieldLabel>
+          <Input
+            id="contact.name"
+            placeholder={t.sections.contact.namePlaceholder}
+            {...register('contact.name')}
+          />
+          <FieldError message={errors.contact?.name?.message} />
         </div>
-      </CardContent>
-    </Card>
+
+        {/* Email */}
+        <div className="space-y-2">
+          <FieldLabel htmlFor="contact.email" required>
+            {t.sections.contact.email}
+          </FieldLabel>
+          <Input
+            id="contact.email"
+            type="email"
+            placeholder={t.sections.contact.emailPlaceholder}
+            {...register('contact.email')}
+          />
+          <FieldError message={errors.contact?.email?.message} />
+        </div>
+
+        {/* Phone */}
+        <div className="space-y-2">
+          <FieldLabel htmlFor="contact.phone" required>
+            {t.sections.contact.phone}
+          </FieldLabel>
+          <Input
+            id="contact.phone"
+            type="tel"
+            placeholder={t.sections.contact.phonePlaceholder}
+            {...register('contact.phone')}
+          />
+          <FieldError message={errors.contact?.phone?.message} />
+        </div>
+      </div>
+    </FormSection>
   )
 }

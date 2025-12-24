@@ -15,22 +15,22 @@ export function Toast({ message, type = 'error', duration = 4000, onClose }: Toa
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsVisible(false)
-      setTimeout(onClose, 300) // 等待动画完成后关闭
+      setTimeout(onClose, 300) // Close after the animation completes
     }, duration)
 
     return () => clearTimeout(timer)
   }, [duration, onClose])
 
   const icons = {
-    success: <CheckCircle className="h-5 w-5 text-green-500" />,
-    error: <AlertCircle className="h-5 w-5 text-red-500" />,
-    warning: <AlertCircle className="h-5 w-5 text-yellow-500" />,
+    success: <CheckCircle className="h-5 w-5 text-chart-2" />,
+    error: <AlertCircle className="h-5 w-5 text-destructive" />,
+    warning: <AlertCircle className="h-5 w-5 text-chart-3" />,
   }
 
   const bgColors = {
-    success: 'bg-green-50 border-green-200',
-    error: 'bg-red-50 border-red-200',
-    warning: 'bg-yellow-50 border-yellow-200',
+    success: 'bg-white border-foreground',
+    error: 'bg-white border-foreground',
+    warning: 'bg-white border-foreground',
   }
 
   return (
@@ -43,18 +43,18 @@ export function Toast({ message, type = 'error', duration = 4000, onClose }: Toa
     >
       <div
         className={cn(
-          'flex items-center gap-3 px-4 py-3 rounded-lg border shadow-lg',
+          'flex items-center gap-3 px-4 py-3 rounded-lg border',
           bgColors[type]
         )}
       >
         {icons[type]}
-        <p className="flex-1 text-sm font-medium text-gray-800">{message}</p>
+        <p className="flex-1 text-sm font-medium text-foreground">{message}</p>
         <button
           onClick={() => {
             setIsVisible(false)
             setTimeout(onClose, 300)
           }}
-          className="text-gray-400 hover:text-gray-600 transition-colors"
+          className="text-muted-foreground hover:text-foreground transition-colors"
         >
           <X className="h-4 w-4" />
         </button>
@@ -63,7 +63,7 @@ export function Toast({ message, type = 'error', duration = 4000, onClose }: Toa
   )
 }
 
-// Toast 容器，用于管理多个 toast
+// Toast container for managing multiple toasts
 interface ToastItem {
   id: number
   message: string

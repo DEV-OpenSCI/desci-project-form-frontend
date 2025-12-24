@@ -2,25 +2,26 @@ import { useState, useEffect, useCallback } from 'react'
 import { useForm, FieldErrors } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
+
 import { useToast } from '@/components/ui/toast'
 import { BasicInfoSection } from './BasicInfoSection'
 import { TeamSection } from './TeamSection'
 import { ProjectIntroSection } from './ProjectIntroSection'
 import { BudgetSection } from './BudgetSection'
 import { ContactSection } from './ContactSection'
-import { projectFormSchema, type ProjectFormData } from '@/types/form'
-import { MILESTONE_STAGES } from '@/lib/constants'
+import { SubmissionSuccess } from '@/components/form/SubmissionSuccess'
+import { createProjectFormSchema, type ProjectFormData } from '@/types/form'
 import { submitApplication } from '@/services/formApi'
 import { useFillCode } from '@/contexts/FillCodeContext'
+import { useTranslation } from '@/i18n'
 
-// 测试用 mock 数据
+// Mock data for test mode
 function getMockFormData(): ProjectFormData {
   const now = new Date()
   const startDate = new Date(now.getFullYear(), now.getMonth(), 1)
   const endDate = new Date(now.getFullYear() + 2, now.getMonth(), 0)
 
-  // 里程碑时间分配（每阶段约8个月）
+  // Milestone timing (roughly 8 months per phase)
   const phase1Start = new Date(startDate)
   const phase1End = new Date(startDate.getFullYear(), startDate.getMonth() + 8, 0)
   const phase2Start = new Date(phase1End.getFullYear(), phase1End.getMonth() + 1, 1)
@@ -29,47 +30,47 @@ function getMockFormData(): ProjectFormData {
   const phase3End = new Date(endDate)
 
   return {
-    projectName: '基于区块链的去中心化科研数据共享平台研究',
+    projectName: 'Decentralized Research Data Sharing Platform',
     startDate,
     endDate,
-    discipline: 'information',
+    discipline: 'engineering',
     field: 'materials',
     teamSize: 5,
     leader: {
-      name: '张三',
+      name: 'Alex Chen',
       orcid: '0000-0002-1234-5678',
-      email: 'zhangsan@example.edu.cn',
+      email: 'alex.chen@example.edu.cn',
       title: 'professor',
       education: 'phd',
-      bio: '长期从事分布式系统和区块链技术研究，发表SCI论文30余篇。',
+      bio: 'Focused on distributed systems and blockchain research, with multiple publications and project leadership.',
     },
     members: [
-      { role: '数据工程师', resumeS3Key: '' },
-      { role: '前端开发工程师', resumeS3Key: '' },
+      { role: 'key-member', resumeS3Key: '' },
+      { role: 'other-member', resumeS3Key: '' },
     ],
-    projectSummary: '当前科研数据共享面临信任缺失、激励不足、隐私泄露等问题。本项目拟采用区块链技术构建去中心化的科研数据共享平台，通过智能合约实现数据确权、访问控制和贡献激励，利用零知识证明保护数据隐私，从而促进科研数据的安全、高效流通，推动开放科学发展。',
-    background: '随着大数据时代的到来，科研数据已成为重要的战略资源。然而，现有的中心化数据共享模式存在诸多问题：数据孤岛现象严重、共享意愿不足、数据确权困难、隐私保护薄弱等。区块链技术的去中心化、不可篡改、可追溯等特性，为解决这些问题提供了新的思路。本项目的实施将有助于打破科研数据壁垒，提升科研协作效率，加速科技创新。',
+    projectSummary: 'Research data sharing faces challenges such as lack of trust, weak incentives, and privacy risks. This project proposes a decentralized platform with smart contracts for data ownership, access control, and contribution incentives.',
+    background: 'Research data is increasingly strategic, yet centralized sharing models suffer from silos and weak data protection. Decentralized systems can improve transparency, traceability, and collaboration efficiency.',
     milestones: [
       {
         stage: 'early',
         startDate: phase1Start,
         endDate: phase1End,
-        content: '完成系统架构设计和核心模块开发',
-        goals: '完成需求分析和系统设计文档\n完成区块链底层选型和适配\n开发数据确权智能合约',
+        content: 'Finalize system architecture and core module development',
+        goals: 'Complete requirements analysis and system design\nSelect and integrate a blockchain framework\nDevelop data ownership smart contracts',
       },
       {
         stage: 'mid',
         startDate: phase2Start,
         endDate: phase2End,
-        content: '完成平台主要功能开发和测试',
-        goals: '完成数据共享和访问控制模块\n完成激励机制设计和实现\n发表SCI论文2篇',
+        content: 'Deliver main platform features and testing',
+        goals: 'Implement data sharing and access control modules\nDeliver contribution incentive mechanism\nSubmit 2 conference papers',
       },
       {
         stage: 'late',
         startDate: phase3Start,
         endDate: phase3End,
-        content: '完成系统集成测试和示范应用',
-        goals: '完成系统性能优化和安全审计\n在3个以上科研机构进行示范应用\n申请发明专利2项',
+        content: 'Complete integration testing and pilot deployment',
+        goals: 'Optimize performance and conduct security audit\nRun pilots across 3+ research institutions\nFile 2 patent applications',
       },
     ],
     budgetItems: [
@@ -82,16 +83,16 @@ function getMockFormData(): ProjectFormData {
       { category: 'labor', donationAmount: 60000, selfFundedAmount: 20000 },
     ],
     contact: {
-      name: '李四',
-      email: 'lisi@example.edu.cn',
+      name: 'Jamie Lee',
+      email: 'jamie.lee@example.edu.cn',
       phone: '13800138000',
     },
   }
 }
 
-const REDIRECT_COUNTDOWN = 10 // 倒计时秒数
+const REDIRECT_COUNTDOWN = 10 // Countdown seconds
 
-// 获取第一个错误字段的名称（支持嵌套）
+// Get the first errored field name (supports nesting)
 function getFirstErrorFieldName(errors: FieldErrors<ProjectFormData>): string | null {
   const fieldOrder = [
     'projectName', 'startDate', 'endDate', 'discipline', 'field', 'teamSize',
@@ -114,7 +115,7 @@ function getFirstErrorFieldName(errors: FieldErrors<ProjectFormData>): string | 
     }
   }
 
-  // 检查数组字段
+  // Check array fields
   if (errors.milestones) {
     for (let i = 0; i < 3; i++) {
       const milestoneErrors = errors.milestones[i]
@@ -132,18 +133,18 @@ function getFirstErrorFieldName(errors: FieldErrors<ProjectFormData>): string | 
   return null
 }
 
-// 滚动到错误字段
+// Scroll to the errored field
 function scrollToErrorField(fieldName: string) {
-  // 尝试通过 name 属性查找
+  // Try to find by name attribute
   let element = document.querySelector(`[name="${fieldName}"]`) as HTMLElement
 
-  // 如果找不到，尝试通过 id 查找（某些组件如 Select 可能使用 id）
+  // If not found, try id (some components like Select use id)
   if (!element) {
     const idFieldName = fieldName.replace(/\./g, '-')
     element = document.getElementById(idFieldName) as HTMLElement
   }
 
-  // 如果还是找不到，尝试查找相关的 label
+  // If still not found, try related labels
   if (!element) {
     const labels = document.querySelectorAll('label')
     for (const label of labels) {
@@ -156,7 +157,7 @@ function scrollToErrorField(fieldName: string) {
 
   if (element) {
     element.scrollIntoView({ behavior: 'smooth', block: 'center' })
-    // 尝试聚焦
+    // Try to focus the element
     setTimeout(() => {
       if (element && 'focus' in element) {
         (element as HTMLInputElement).focus?.()
@@ -172,12 +173,13 @@ export function ProjectForm() {
   const [countdown, setCountdown] = useState(REDIRECT_COUNTDOWN)
   const { clear: clearFillCode } = useFillCode()
   const { showToast, ToastContainer } = useToast()
+  const { t } = useTranslation()
 
-  // 检测是否为测试模式
+  // Check if test mode is enabled
   const isTestMode = new URLSearchParams(window.location.search).get('test') === 'true'
 
   const form = useForm<ProjectFormData>({
-    resolver: zodResolver(projectFormSchema),
+    resolver: zodResolver(createProjectFormSchema(t)),
     defaultValues: {
       projectName: '',
       discipline: '',
@@ -194,7 +196,7 @@ export function ProjectForm() {
       members: [],
       projectSummary: '',
       background: '',
-      milestones: MILESTONE_STAGES.map((stage) => ({
+      milestones: t.options.milestoneStages.map((stage) => ({
         stage: stage.value,
         startDate: undefined as unknown as Date,
         endDate: undefined as unknown as Date,
@@ -210,7 +212,7 @@ export function ProjectForm() {
     },
   })
 
-  // 测试模式下自动填充 mock 数据
+  // Auto-fill mock data in test mode
   useEffect(() => {
     if (isTestMode) {
       const mockData = getMockFormData()
@@ -225,19 +227,19 @@ export function ProjectForm() {
     try {
       const appNo = await submitApplication(data)
       setApplicationNo(appNo)
-      setCountdown(REDIRECT_COUNTDOWN) // 重置倒计时
+      setCountdown(REDIRECT_COUNTDOWN) // Reset countdown
     } catch (error) {
       setSubmitError(
-        error instanceof Error ? error.message : '提交失败，请稍后重试'
+        error instanceof Error ? error.message : t.messages.submitFailed
       )
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  // 表单校验失败时的处理
+  // Handle validation failure
   const onInvalid = useCallback((errors: FieldErrors<ProjectFormData>) => {
-    // 计算错误数量
+    // Count validation errors
     let errorCount = 0
     const countErrors = (obj: unknown): number => {
       if (!obj || typeof obj !== 'object') return 0
@@ -257,20 +259,20 @@ export function ProjectForm() {
     }
     errorCount = countErrors(errors)
 
-    // 显示 toast 提示
+    // Show toast notification
     showToast(
-      `请检查表单，还有 ${errorCount} 项必填内容未填写`,
+      t.messages.formMissingRequired.replace('{count}', `${errorCount}`),
       'warning'
     )
 
-    // 滚动到第一个错误字段
+    // Scroll to the first errored field
     const firstErrorField = getFirstErrorFieldName(errors)
     if (firstErrorField) {
       setTimeout(() => scrollToErrorField(firstErrorField), 100)
     }
-  }, [showToast])
+  }, [showToast, t])
 
-  // 提交成功后的倒计时逻辑
+  // Countdown logic after successful submission
   useEffect(() => {
     if (!applicationNo) return
 
@@ -278,7 +280,7 @@ export function ProjectForm() {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer)
-          clearFillCode() // 倒计时结束后清除填写码，返回首页
+          clearFillCode() // Clear code after countdown and return home
           return 0
         }
         return prev - 1
@@ -288,83 +290,15 @@ export function ProjectForm() {
     return () => clearInterval(timer)
   }, [applicationNo, clearFillCode])
 
-  // 如果提交成功，显示成功页面
+  // Show success page after submission
   if (applicationNo) {
     return (
-      <div className="flex flex-col items-center justify-center space-y-8 py-16">
-        {/* 成功图标 */}
-        <div className="relative">
-          <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center animate-in zoom-in duration-300">
-            <svg
-              className="w-10 h-10"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2.5}
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-          </div>
-          <div className="absolute inset-0 w-20 h-20 bg-green-400 rounded-full animate-ping opacity-20"></div>
-        </div>
-
-        {/* 成功标题 */}
-        <div className="text-center space-y-2">
-          <h2 className="text-3xl font-bold text-green-600">提交成功！</h2>
-          <p className="text-muted-foreground">
-            您的项目申请已成功提交，我们将尽快进行审核
-          </p>
-          <p className="text-sm text-muted-foreground">
-            页面将在 <span className="font-bold text-primary">{countdown}</span> 秒后自动返回首页
-          </p>
-        </div>
-
-        {/* 申请编号卡片 */}
-        <div className="w-full max-w-md p-6 bg-muted/30 border-2 border-primary/20 rounded-lg space-y-3">
-          <div className="text-center space-y-2">
-            <p className="text-sm text-muted-foreground">申请编号</p>
-            <div className="p-4 bg-background rounded-md border border-border">
-              <p className="text-2xl font-mono font-bold text-primary tracking-wider">
-                {applicationNo}
-              </p>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              请妥善保存此编号，您可以使用该编号查询申请进度
-            </p>
-          </div>
-        </div>
-
-        {/* 下一步提示 */}
-        <div className="w-full max-w-md space-y-4 text-sm">
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h3 className="font-semibold text-blue-900 mb-2">后续流程</h3>
-            <ul className="space-y-1 text-blue-800">
-              <li>• 我们将在 3-5 个工作日内完成初审</li>
-              <li>• 审核结果将通过邮件通知您</li>
-              <li>• 如有疑问，请联系项目联系人</li>
-            </ul>
-          </div>
-        </div>
-
-        {/* 操作按钮 */}
-        <div className="flex gap-4">
-          <Button
-            variant="outline"
-            onClick={() => window.print()}
-          >
-            打印此页面
-          </Button>
-          <Button
-            onClick={clearFillCode}
-          >
-            立即返回首页
-          </Button>
-        </div>
-      </div>
+      <SubmissionSuccess
+        applicationNo={applicationNo}
+        countdown={countdown}
+        onPrint={() => window.print()}
+        onReturn={clearFillCode}
+      />
     )
   }
 
@@ -372,45 +306,38 @@ export function ProjectForm() {
     <>
       <ToastContainer />
       <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="space-y-8">
-        {/* 第一部分：项目基本信息 */}
+        {/* Section 1: Basic project information */}
+        {/* Section 1: Basic project information */}
         <BasicInfoSection form={form} />
 
-        <Separator />
-
-        {/* 第二部分：项目组成员信息 */}
+        {/* Section 2: Team information */}
         <TeamSection form={form} />
 
-        <Separator />
-
-        {/* 第三部分：项目介绍 */}
+        {/* Section 3: Project introduction */}
         <ProjectIntroSection form={form} />
 
-        <Separator />
-
-        {/* 第四部分：项目经费 */}
+        {/* Section 4: Project budget */}
         <BudgetSection form={form} />
 
-        <Separator />
-
-        {/* 第五部分：项目联系人 */}
+        {/* Section 5: Contact person */}
         <ContactSection form={form} />
 
-        {/* 错误提示 */}
+        {/* Error prompt */}
         {submitError && (
-          <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-md">
+          <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-sm">
             {submitError}
           </div>
         )}
 
-        {/* 提交按钮 */}
+        {/* Submit button */}
         <div className="flex justify-center pt-6">
           <Button
             type="submit"
             size="lg"
-            className="px-12"
+            className="px-12 rounded-full h-14 text-base shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
             disabled={isSubmitting}
           >
-            {isSubmitting ? '提交中...' : '提交申请'}
+            {isSubmitting ? t.common.submitting : t.common.submit}
           </Button>
         </div>
       </form>
