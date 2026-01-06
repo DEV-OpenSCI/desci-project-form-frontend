@@ -43,7 +43,7 @@ export function BasicInfoSection({ form }: BasicInfoSectionProps) {
           <FieldLabel required>{t.sections.basicInfo.startDate}</FieldLabel>
           <DatePicker
             date={watch('startDate')}
-            onSelect={(date) => setValue('startDate', date as Date)}
+            onSelect={(date) => setValue('startDate', date as Date, { shouldValidate: true })}
             placeholder={t.sections.basicInfo.selectDate}
           />
           <FieldError message={errors.startDate?.message} />
@@ -52,7 +52,7 @@ export function BasicInfoSection({ form }: BasicInfoSectionProps) {
           <FieldLabel required>{t.sections.basicInfo.endDate}</FieldLabel>
           <DatePicker
             date={watch('endDate')}
-            onSelect={(date) => setValue('endDate', date as Date)}
+            onSelect={(date) => setValue('endDate', date as Date, { shouldValidate: true })}
             placeholder={t.sections.basicInfo.selectDate}
           />
           <FieldError message={errors.endDate?.message} />
@@ -65,7 +65,7 @@ export function BasicInfoSection({ form }: BasicInfoSectionProps) {
           <FieldLabel required>{t.sections.basicInfo.discipline}</FieldLabel>
           <Select
             value={watch('discipline')}
-            onValueChange={(value) => setValue('discipline', value)}
+            onValueChange={(value) => setValue('discipline', value, { shouldValidate: true })}
           >
             <SelectTrigger className={!watch('discipline') ? "text-muted-foreground" : ""}>
               <SelectValue placeholder={t.sections.basicInfo.disciplinePlaceholder} />
@@ -84,7 +84,7 @@ export function BasicInfoSection({ form }: BasicInfoSectionProps) {
           <FieldLabel required>{t.sections.basicInfo.field}</FieldLabel>
           <Select
             value={watch('field')}
-            onValueChange={(value) => setValue('field', value)}
+            onValueChange={(value) => setValue('field', value, { shouldValidate: true })}
           >
             <SelectTrigger className={!watch('field') ? "text-muted-foreground" : ""}>
               <SelectValue placeholder={t.sections.basicInfo.fieldPlaceholder} />

@@ -153,7 +153,7 @@ export function TeamSection({ form }: TeamSectionProps) {
               <FieldLabel required>{t.sections.team.titleLabel}</FieldLabel>
               <Select
                 value={watch('leader.title')}
-                onValueChange={(value) => setValue('leader.title', value)}
+                onValueChange={(value) => setValue('leader.title', value, { shouldValidate: true })}
               >
                 <SelectTrigger className={!watch('leader.title') ? "text-muted-foreground" : ""}>
                   <SelectValue placeholder={t.sections.team.titlePlaceholder} />
@@ -172,7 +172,7 @@ export function TeamSection({ form }: TeamSectionProps) {
               <FieldLabel required>{t.sections.team.education}</FieldLabel>
               <Select
                 value={watch('leader.education')}
-                onValueChange={(value) => setValue('leader.education', value)}
+                onValueChange={(value) => setValue('leader.education', value, { shouldValidate: true })}
               >
                 <SelectTrigger className={!watch('leader.education') ? "text-muted-foreground" : ""}>
                   <SelectValue placeholder={t.sections.team.educationPlaceholder} />
@@ -248,7 +248,7 @@ export function TeamSection({ form }: TeamSectionProps) {
                       <FieldLabel required>{t.sections.team.role}</FieldLabel>
                       <Select
                         value={watch(`members.${index}.role`)}
-                        onValueChange={(value) => setValue(`members.${index}.role`, value)}
+                        onValueChange={(value) => setValue(`members.${index}.role`, value, { shouldValidate: true })}
                       >
                         <SelectTrigger className={!watch(`members.${index}.role`) ? "text-muted-foreground" : ""}>
                           <SelectValue placeholder={t.sections.team.rolePlaceholder} />

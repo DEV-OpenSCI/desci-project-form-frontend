@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils'
 
-type BrandSize = 'sm' | 'lg'
+type BrandSize = 'sm' | 'md' | 'lg'
 
 type BrandDirection = 'row' | 'column'
 
@@ -19,6 +19,11 @@ const sizeStyles: Record<BrandSize, { mark: string; title: string; gap: string }
     mark: 'w-10 h-10 text-lg',
     title: 'text-xl',
     gap: 'gap-3',
+  },
+  md: {
+    mark: 'w-12 h-12 text-xl',
+    title: 'text-2xl',
+    gap: 'gap-3.5',
   },
   lg: {
     mark: 'w-16 h-16 text-3xl',

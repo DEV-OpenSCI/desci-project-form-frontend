@@ -270,6 +270,18 @@ export const en = {
         back: 'Back',
     },
 
+    // Stepper
+    stepper: {
+        step: 'Step',
+        basicInfo: 'Basic Info',
+        team: 'Team',
+        projectIntro: 'Introduction',
+        budget: 'Budget',
+        contact: 'Contact',
+        prev: 'Previous',
+        next: 'Next',
+    },
+
     // Header
     header: {
         code: 'Code:',

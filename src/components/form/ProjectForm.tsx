@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useForm, FieldErrors } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Button } from '@/components/ui/button'
 
 import { useToast } from '@/components/ui/toast'
 import { BasicInfoSection } from './BasicInfoSection'
@@ -10,10 +9,28 @@ import { ProjectIntroSection } from './ProjectIntroSection'
 import { BudgetSection } from './BudgetSection'
 import { ContactSection } from './ContactSection'
 import { SubmissionSuccess } from '@/components/form/SubmissionSuccess'
+import { VerticalStepper } from './VerticalStepper' // [NEW] Left Sidebar Stepper
+import { StepNavigation } from './StepNavigation'
+import { AnimatePresence } from 'framer-motion' // [NEW] Motion
+import { MotionPage } from './MotionPage' // [NEW] Page Transition Wrapper
+import { FormLayout } from '@/components/layout/FormLayout' // [NEW] Layout Wrapper
+import { BrandMark } from '@/components/layout/BrandMark' // [NEW] For Sidebar
+import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher' // [NEW] For Sidebar
+import { Button } from '@/components/ui/button'
+import { LogOut } from 'lucide-react'
 import { createProjectFormSchema, type ProjectFormData } from '@/types/form'
 import { submitApplication } from '@/services/formApi'
 import { useFillCode } from '@/contexts/FillCodeContext'
 import { useTranslation } from '@/i18n'
+
+// Form step definitions
+const FORM_STEPS = [
+  { key: 'basicInfo', labelKey: 'basicInfo' },
+  { key: 'team', labelKey: 'team' },
+  { key: 'projectIntro', labelKey: 'projectIntro' },
+  { key: 'budget', labelKey: 'budget' },
+  { key: 'contact', labelKey: 'contact' },
+]
 
 // Mock data for test mode
 function getMockFormData(): ProjectFormData {
@@ -167,7 +184,9 @@ function scrollToErrorField(fieldName: string) {
 }
 
 export function ProjectForm() {
+  const [currentStep, setCurrentStep] = useState(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isValidating, setIsValidating] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [applicationNo, setApplicationNo] = useState<string | null>(null)
   const [countdown, setCountdown] = useState(REDIRECT_COUNTDOWN)
@@ -175,11 +194,63 @@ export function ProjectForm() {
   const { showToast, ToastContainer } = useToast()
   const { t } = useTranslation()
 
+  // Step navigation handlers
+  // Define fields to validate for each step
+  const getStepFields = (step: number): any[] => {
+    switch (step) {
+      case 0: return ['projectName', 'startDate', 'endDate', 'discipline', 'field', 'teamSize']
+      case 1: return ['leader.name', 'leader.email', 'leader.title', 'leader.education', 'members'] // leader fields + members array
+      case 2: return ['projectSummary', 'background', 'milestones']
+      case 3: return ['budgetItems']
+      case 4: return ['contact.name', 'contact.email', 'contact.phone']
+      default: return []
+    }
+  }
+
+  // Step navigation handlers
+  const handlePrevStep = () => {
+    setCurrentStep((prev) => Math.max(0, prev - 1))
+  }
+
+  const handleNextStep = async () => {
+    setIsValidating(true)
+    const fields = getStepFields(currentStep)
+    const isValid = await form.trigger(fields as any)
+    setIsValidating(false)
+
+    if (isValid) {
+      setCurrentStep((prev) => Math.min(FORM_STEPS.length - 1, prev + 1))
+    }
+  }
+
+  const handleStepClick = async (index: number) => {
+    // Allow going back always
+    if (index < currentStep) {
+      setCurrentStep(index)
+      return
+    }
+
+    // If clicking next step, validate current
+    if (index === currentStep + 1) {
+      setIsValidating(true)
+      const fields = getStepFields(currentStep)
+      const isValid = await form.trigger(fields as any)
+      setIsValidating(false)
+      if (isValid) {
+        setCurrentStep(index)
+      }
+      return
+    }
+
+    // Do not allow jumping ahead more than 1 step
+  }
+
   // Check if test mode is enabled
   const isTestMode = new URLSearchParams(window.location.search).get('test') === 'true'
 
   const form = useForm<ProjectFormData>({
     resolver: zodResolver(createProjectFormSchema(t)),
+    mode: 'onChange',
     defaultValues: {
       projectName: '',
       discipline: '',
@@ -272,6 +343,14 @@ export function ProjectForm() {
     }
   }, [showToast, t])
 
+  // Auto-scroll to top when step changes
+  useEffect(() => {
+    const mainContent = document.getElementById('form-main-content')
+    if (mainContent) {
+      mainContent.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }, [currentStep])
+
   // Countdown logic after successful submission
   useEffect(() => {
     if (!applicationNo) return
@@ -290,7 +369,7 @@ export function ProjectForm() {
     return () => clearInterval(timer)
   }, [applicationNo, clearFillCode])
 
-  // Show success page after submission
+  // Show success page after submission (kept as is or wrapped in motion)
   if (applicationNo) {
     return (
       <SubmissionSuccess
@@ -302,45 +381,108 @@ export function ProjectForm() {
     )
   }
 
+  // Sidebar content including Logo, Stepper, and User Controls
+  const sidebarContent = (
+    <div className="h-full flex flex-col">
+      <div className="mb-8 pt-4">
+        <BrandMark size="md" />
+      </div>
+
+      <div className="flex-1">
+        <VerticalStepper
+          steps={FORM_STEPS}
+          currentStep={currentStep}
+          onStepClick={handleStepClick}
+        />
+      </div>
+
+      <div className="pt-8 border-t border-border/10 flex flex-col gap-6">
+        <div className="flex items-center justify-between">
+          <LanguageSwitcher />
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearFillCode}
+            className="text-muted-foreground hover:text-foreground hover:bg-muted/50 gap-2 h-8 px-2"
+          >
+            <LogOut size={16} />
+            <span className="font-mono text-xs font-medium tracking-wider">LOG OUT</span>
+          </Button>
+        </div>
+
+        <div className="text-xs text-muted-foreground/40 font-mono">
+          © 2025 OpenSCI
+        </div>
+      </div>
+    </div>
+  )
+
   return (
     <>
       <ToastContainer />
-      <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="space-y-8">
-        {/* Section 1: Basic project information */}
-        {/* Section 1: Basic project information */}
-        <BasicInfoSection form={form} />
-
-        {/* Section 2: Team information */}
-        <TeamSection form={form} />
-
-        {/* Section 3: Project introduction */}
-        <ProjectIntroSection form={form} />
-
-        {/* Section 4: Project budget */}
-        <BudgetSection form={form} />
-
-        {/* Section 5: Contact person */}
-        <ContactSection form={form} />
-
-        {/* Error prompt */}
-        {submitError && (
-          <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-sm">
-            {submitError}
-          </div>
-        )}
-
-        {/* Submit button */}
-        <div className="flex justify-center pt-6">
-          <Button
-            type="submit"
-            size="lg"
-            className="px-12 rounded-full h-14 text-base shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? t.common.submitting : t.common.submit}
-          </Button>
+      <FormLayout sidebarContent={sidebarContent}>
+        {/* Mobile Stepper Support (optional, for small screens) */}
+        <div className="lg:hidden mb-8">
+          <VerticalStepper
+            steps={FORM_STEPS}
+            currentStep={currentStep}
+            onStepClick={handleStepClick}
+            className="flex-row overflow-x-auto max-w-full pb-2"
+          />
         </div>
-      </form>
+
+        <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="w-full max-w-3xl mx-auto flex flex-col relative min-h-[500px]">
+          {/* Card Stack Container - Grid for overlapping */}
+          <div className="flex-1 grid grid-cols-1 grid-rows-1 isolate w-full">
+            <AnimatePresence mode="popLayout" custom={currentStep}>
+              {currentStep === 0 && (
+                <MotionPage key="basicInfo" className="col-start-1 row-start-1 h-fit bg-red-500/0" custom={currentStep}>
+                  <BasicInfoSection form={form} />
+                </MotionPage>
+              )}
+              {currentStep === 1 && (
+                <MotionPage key="team" className="col-start-1 row-start-1 h-fit" custom={currentStep}>
+                  <TeamSection form={form} />
+                </MotionPage>
+              )}
+              {currentStep === 2 && (
+                <MotionPage key="projectIntro" className="col-start-1 row-start-1 h-fit" custom={currentStep}>
+                  <ProjectIntroSection form={form} />
+                </MotionPage>
+              )}
+              {currentStep === 3 && (
+                <MotionPage key="budget" className="col-start-1 row-start-1 h-fit" custom={currentStep}>
+                  <BudgetSection form={form} />
+                </MotionPage>
+              )}
+              {currentStep === 4 && (
+                <MotionPage key="contact" className="col-start-1 row-start-1 h-fit" custom={currentStep}>
+                  <ContactSection form={form} />
+                </MotionPage>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Error prompt */}
+          {submitError && (
+            <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-sm mt-6">
+              {submitError}
+            </div>
+          )}
+
+          {/* Step navigation */}
+          <StepNavigation
+            currentStep={currentStep}
+            totalSteps={FORM_STEPS.length}
+            onPrev={handlePrevStep}
+            onNext={handleNextStep}
+            isSubmitting={isSubmitting}
+            isValidating={isValidating}
+            className="mt-12"
+          />
+        </form>
+      </FormLayout>
     </>
   )
 }

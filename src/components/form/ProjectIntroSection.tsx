@@ -74,7 +74,7 @@ export function ProjectIntroSection({ form }: ProjectIntroSectionProps) {
 
       try {
         const content = await parseDocument(file, fieldName, language)
-        setValue(formFieldName, content)
+        setValue(formFieldName, content, { shouldValidate: true })
         setAiParseState(prev => ({
           ...prev,
           [fieldName]: { parsing: false }
@@ -112,7 +112,7 @@ export function ProjectIntroSection({ form }: ProjectIntroSectionProps) {
               size="sm"
               onClick={() => handleAiParse('introduction', 'projectSummary')}
               disabled={aiParseState.introduction.parsing}
-              className="rounded-full pl-2 text-sm"
+              className="rounded-full pl-1 text-sm"
             >
               {aiParseState.introduction.parsing ? (
                 <>
@@ -159,7 +159,7 @@ export function ProjectIntroSection({ form }: ProjectIntroSectionProps) {
               size="sm"
               onClick={() => handleAiParse('background', 'background')}
               disabled={aiParseState.background.parsing}
-              className="rounded-full pl-2 text-sm"
+              className="rounded-full pl-1 text-sm"
             >
               {aiParseState.background.parsing ? (
                 <>
@@ -226,7 +226,7 @@ export function ProjectIntroSection({ form }: ProjectIntroSectionProps) {
                       <FieldLabel required>{t.sections.projectIntro.startTime}</FieldLabel>
                       <DatePicker
                         date={watch(`milestones.${index}.startDate`)}
-                        onSelect={(date) => setValue(`milestones.${index}.startDate`, date as Date)}
+                        onSelect={(date) => setValue(`milestones.${index}.startDate`, date as Date, { shouldValidate: true })}
                         placeholder={t.sections.basicInfo.selectDate}
                       />
                       <FieldError message={errors.milestones?.[index]?.startDate?.message} />
@@ -235,7 +235,7 @@ export function ProjectIntroSection({ form }: ProjectIntroSectionProps) {
                       <FieldLabel required>{t.sections.projectIntro.endTime}</FieldLabel>
                       <DatePicker
                         date={watch(`milestones.${index}.endDate`)}
-                        onSelect={(date) => setValue(`milestones.${index}.endDate`, date as Date)}
+                        onSelect={(date) => setValue(`milestones.${index}.endDate`, date as Date, { shouldValidate: true })}
                         placeholder={t.sections.basicInfo.selectDate}
                       />
                       <FieldError message={errors.milestones?.[index]?.endDate?.message} />

@@ -30,13 +30,13 @@ export function BudgetSection({ form }: BudgetSectionProps) {
   })
 
   const addBudgetItem = () => {
-    append({ category: '', donationAmount: 0, selfFundedAmount: 0 })
+    append({ category: '', donationAmount: '' as any, selfFundedAmount: '' as any })
   }
 
   // Calculate totals
   const budgetItems = watch('budgetItems') || []
-  const totalDonation = budgetItems.reduce((sum, item) => sum + (item.donationAmount || 0), 0)
-  const totalSelfFund = budgetItems.reduce((sum, item) => sum + (item.selfFundedAmount || 0), 0)
+  const totalDonation = budgetItems.reduce((sum, item) => sum + (Number(item.donationAmount) || 0), 0)
+  const totalSelfFund = budgetItems.reduce((sum, item) => sum + (Number(item.selfFundedAmount) || 0), 0)
   const total = totalDonation + totalSelfFund
 
   return (
@@ -53,12 +53,12 @@ export function BudgetSection({ form }: BudgetSectionProps) {
         </div>
 
         {/* Table header */}
-        <div className="border-b overflow-hidden">
-          <div className="hidden md:grid md:grid-cols-[3rem_1.3fr_1fr_1fr_1fr_2.5rem] gap-4 py-3 border-b font-normal text-sm text-foreground uppercase tracking-widest items-center whitespace-nowrap">
+        <div className="border-b overflow-x-auto">
+          <div className="hidden md:grid md:grid-cols-[3rem_minmax(160px,200px)_minmax(120px,160px)_minmax(120px,160px)_minmax(80px,120px)_3rem] gap-4 py-3 border-b font-normal text-sm text-foreground uppercase tracking-widest items-center whitespace-nowrap">
             <div className="w-12 text-center">{t.sections.budget.tableNo}</div>
-            <div>{t.sections.budget.tableCategory}</div>
-            <div>{t.sections.budget.tableDonation}</div>
-            <div>{t.sections.budget.tableSelfFunded}</div>
+            <div className="text-left">{t.sections.budget.tableCategory}</div>
+            <div className="text-left">{t.sections.budget.tableDonation}</div>
+            <div className="text-left">{t.sections.budget.tableSelfFunded}</div>
             <div className="text-right pr-8">{t.sections.budget.tableSubtotal}</div>
             <div className="w-10"></div>
           </div>
@@ -72,10 +72,10 @@ export function BudgetSection({ form }: BudgetSectionProps) {
               {fields.map((field, index) => (
                 <div
                   key={field.id}
-                  className="grid gap-4 md:grid-cols-[3rem_1.3fr_1fr_1fr_1fr_2.5rem] items-center py-4 transition-colors"
+                  className="grid gap-4 md:grid-cols-[3rem_minmax(160px,200px)_minmax(120px,160px)_minmax(120px,160px)_minmax(80px,120px)_3rem] items-start py-4 transition-colors relative"
                 >
                   {/* No. */}
-                  <div className="hidden md:flex items-center justify-center w-12 font-bold text-sm">
+                  <div className="hidden md:flex items-center justify-center w-12 h-10 font-bold text-sm">
                     {index + 1}
                   </div>
 
@@ -84,9 +84,9 @@ export function BudgetSection({ form }: BudgetSectionProps) {
                     <FieldLabel className="md:hidden">{t.sections.budget.category}</FieldLabel>
                     <Select
                       value={watch(`budgetItems.${index}.category`)}
-                      onValueChange={(value) => setValue(`budgetItems.${index}.category`, value)}
+                      onValueChange={(value) => setValue(`budgetItems.${index}.category`, value, { shouldValidate: true })}
                     >
-                      <SelectTrigger className={`w-full text-sm [&>span]:truncate ${!watch(`budgetItems.${index}.category`) ? "text-muted-foreground" : ""}`}>
+                      <SelectTrigger className={`w-full text-sm h-10 [&>span]:truncate ${!watch(`budgetItems.${index}.category`) ? "text-muted-foreground" : ""}`}>
                         <SelectValue placeholder={t.sections.budget.categoryPlaceholder} />
                       </SelectTrigger>
                       <SelectContent>
@@ -109,7 +109,8 @@ export function BudgetSection({ form }: BudgetSectionProps) {
                       pattern="[0-9]*"
                       placeholder="0"
                       {...register(`budgetItems.${index}.donationAmount`, { valueAsNumber: true })}
-                      className="font-mono bg-transparent text-sm"
+                      onFocus={(e) => e.target.select()}
+                      className="font-mono bg-transparent text-sm h-10"
                     />
                     <FieldError message={errors.budgetItems?.[index]?.donationAmount?.message} />
                   </div>
@@ -123,18 +124,19 @@ export function BudgetSection({ form }: BudgetSectionProps) {
                       pattern="[0-9]*"
                       placeholder="0"
                       {...register(`budgetItems.${index}.selfFundedAmount`, { valueAsNumber: true })}
-                      className="font-mono bg-transparent text-sm"
+                      onFocus={(e) => e.target.select()}
+                      className="font-mono bg-transparent text-sm h-10"
                     />
                     <FieldError message={errors.budgetItems?.[index]?.selfFundedAmount?.message} />
                   </div>
 
                   {/* Subtotal */}
-                  <div className="hidden md:flex items-center justify-end md:pr-8 h-12 font-mono font-medium text-foreground text-sm">
-                    {t.sections.budget.yuan} {((watch(`budgetItems.${index}.donationAmount`) || 0) + (watch(`budgetItems.${index}.selfFundedAmount`) || 0)).toLocaleString()}
+                  <div className="hidden md:flex items-center justify-end md:pr-8 h-10 font-mono font-medium text-foreground text-sm">
+                    {t.sections.budget.yuan} {((Number(watch(`budgetItems.${index}.donationAmount`)) || 0) + (Number(watch(`budgetItems.${index}.selfFundedAmount`)) || 0)).toLocaleString()}
                   </div>
 
                   {/* Remove button */}
-                  <div className="flex justify-end md:justify-center">
+                  <div className="flex justify-end md:justify-center h-10 items-center">
                     <Button
                       type="button"
                       variant="ghost"
@@ -152,7 +154,7 @@ export function BudgetSection({ form }: BudgetSectionProps) {
 
           {/* Total */}
           {fields.length > 0 && (
-            <div className="grid gap-4 md:grid-cols-[3rem_1.3fr_1fr_1fr_1fr_2.5rem] items-center py-4 font-medium">
+            <div className="grid gap-4 md:grid-cols-[3rem_minmax(160px,200px)_minmax(120px,160px)_minmax(120px,160px)_minmax(80px,120px)_3rem] items-center py-4 font-medium">
               <div className="w-12"></div>
               <div className="font-medium uppercase tracking-widest text-sm">{t.sections.budget.tableTotal}</div>
               <div className="text-primary font-mono font-medium text-sm">{t.sections.budget.yuan} {totalDonation.toLocaleString()}</div>

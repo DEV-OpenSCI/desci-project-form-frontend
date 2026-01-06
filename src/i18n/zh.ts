@@ -270,6 +270,18 @@ export const zh = {
         back: '返回',
     },
 
+    // Stepper
+    stepper: {
+        step: '步骤',
+        basicInfo: '基本信息',
+        team: '团队信息',
+        projectIntro: '项目介绍',
+        budget: '项目经费',
+        contact: '联系人',
+        prev: '上一步',
+        next: '下一步',
+    },
+
     // Header
     header: {
         code: 'Code:',
