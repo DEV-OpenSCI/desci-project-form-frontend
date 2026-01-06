@@ -19,7 +19,7 @@ export function FormSection({
   bodyClassName,
 }: FormSectionProps) {
   return (
-    <section className={cn('bg-card rounded border border-border p-6 md:p-8 space-y-8', className)}>
+    <section className={cn('bg-white rounded-sm border border-black/5 shadow-sm p-6 md:p-8 space-y-8', className)}>
       <div className={cn('space-y-2 border-b border-border/40 pb-4', headerClassName)}>
         <h3 className="text-xl font-bold text-foreground flex items-center gap-2">{title}</h3>
         {description && <p className="text-muted-foreground text-sm">{description}</p>}

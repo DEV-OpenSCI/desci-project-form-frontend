@@ -6,7 +6,7 @@ export function FooterBar() {
           DeSci Project Application Form
         </div>
         <div className="flex gap-6">
-          <span className="text-sm text-muted-foreground font-mono">© 2025 OpenSCI</span>
+          <span className="text-sm text-muted-foreground font-mono">© 2025 OPENSCI</span>
         </div>
       </div>
     </footer>

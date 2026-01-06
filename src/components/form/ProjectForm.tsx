@@ -404,7 +404,7 @@ export function ProjectForm() {
             variant="ghost"
             size="sm"
             onClick={clearFillCode}
-            className="text-muted-foreground hover:text-foreground hover:bg-muted/50 gap-2 h-8 px-2"
+            className="text-muted-foreground hover:bg-primary hover:text-primary-foreground gap-2 h-8 px-2 transition-colors"
           >
             <LogOut size={16} />
             <span className="font-mono text-xs font-medium tracking-wider">LOG OUT</span>
@@ -412,7 +412,7 @@ export function ProjectForm() {
         </div>
 
         <div className="text-xs text-muted-foreground/40 font-mono">
-          © 2025 OpenSCI
+          © 2025 OPENSCI
         </div>
       </div>
     </div>
