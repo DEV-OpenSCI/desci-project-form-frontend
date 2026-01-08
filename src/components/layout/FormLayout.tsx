@@ -20,7 +20,7 @@ export function FormLayout({ sidebarContent, topRightContent, children, classNam
             </aside>
 
             {/* Main Content Area */}
-            <main id="form-main-content" className="flex-1 lg:ml-[320px] xl:ml-[340px] relative z-10 h-screen overflow-y-auto no-scrollbar scroll-smooth">
+            <main id="form-main-content" className="flex-1 relative z-10 h-screen overflow-y-auto no-scrollbar scroll-smooth">
                 {topRightContent && (
                     <div className="absolute top-6 right-6 lg:top-8 lg:right-8 xl:top-12 xl:right-12 z-50">
                         {topRightContent}
@@ -28,7 +28,7 @@ export function FormLayout({ sidebarContent, topRightContent, children, classNam
                 )}
 
                 {/* DotGrid Background - Fixed at bottom */}
-                <div className="fixed bottom-0 left-0 lg:left-[320px] xl:left-[340px] right-0 h-[50vh] pointer-events-none z-0 opacity-50">
+                <div className="fixed bottom-0 left-0 right-0 h-[50vh] pointer-events-none z-0 opacity-50">
                     <DotGrid
                         dotSize={2}
                         gap={24}
