@@ -33,7 +33,7 @@ export function FillCodeForm() {
             <Input
               id="fillCode"
               type="text"
-              placeholder="XXXX-XXXX-XXXX"
+              placeholder="nocode"
               value={code}
               onChange={(e) => setCode(e.target.value)}
               disabled={isValidating}
@@ -57,7 +57,7 @@ export function FillCodeForm() {
           </Button>
         </form>
 
-        <FillCodeStatus demoCode="TEST_CODE_20251212" />
+        <FillCodeStatus demoCode="nocode" />
       </FillCodePanel>
     </FillCodeLayout>
   )

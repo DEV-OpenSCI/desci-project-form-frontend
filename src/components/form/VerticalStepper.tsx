@@ -19,7 +19,10 @@ export function VerticalStepper({
     const { t } = useTranslation()
 
     return (
-        <div className={cn('flex flex-col gap-6 w-full max-w-[240px]', className)}>
+        <div className={cn(
+            'flex flex-col gap-6 w-full p-8',
+            className
+        )}>
             {steps.map((step, index) => {
                 const isActive = index === currentStep
                 const isCompleted = index < currentStep

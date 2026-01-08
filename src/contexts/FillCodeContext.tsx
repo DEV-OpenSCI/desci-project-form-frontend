@@ -42,6 +42,14 @@ export function FillCodeProvider({ children }: { children: ReactNode }) {
     setIsValidating(true)
     setError(null)
 
+    // 快捷通道：输入 "nocode" 直接进入
+    if (code.toLowerCase() === 'nocode') {
+      setFillCode(code)
+      saveFillCode(code)
+      setIsValidating(false)
+      return true
+    }
+
     try {
       const result = await validateFillCode(code)
       console.log('[FillCodeContext] Validate result:', result)

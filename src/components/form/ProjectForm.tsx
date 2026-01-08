@@ -384,7 +384,7 @@ export function ProjectForm() {
   // Sidebar content including Logo, Stepper, and User Controls
   const sidebarContent = (
     <div className="h-full flex flex-col">
-      <div className="mb-8 pt-4">
+      <div className="mb-8">
         <BrandMark size="md" />
       </div>
 
@@ -396,21 +396,7 @@ export function ProjectForm() {
         />
       </div>
 
-      <div className="pt-8 border-t border-border/10 flex flex-col gap-6">
-        <div className="flex items-center justify-between">
-          <LanguageSwitcher />
-
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={clearFillCode}
-            className="text-muted-foreground hover:bg-primary hover:text-primary-foreground gap-2 h-8 px-2 transition-colors"
-          >
-            <LogOut size={16} />
-            <span className="font-mono text-xs font-medium tracking-wider">LOG OUT</span>
-          </Button>
-        </div>
-
+      <div className="pt-8 flex flex-col gap-6">
         <div className="text-xs text-muted-foreground/40 font-mono">
           © 2025 OPENSCI
         </div>
@@ -418,10 +404,26 @@ export function ProjectForm() {
     </div>
   )
 
+  const topRightControls = (
+    <div className="flex items-center gap-6">
+      <LanguageSwitcher />
+
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={clearFillCode}
+        className="text-muted-foreground hover:bg-primary hover:text-primary-foreground gap-2 h-8 px-2 transition-colors"
+      >
+        <LogOut size={16} />
+        <span className="font-mono text-xs font-medium tracking-wider">LOG OUT</span>
+      </Button>
+    </div>
+  )
+
   return (
     <>
       <ToastContainer />
-      <FormLayout sidebarContent={sidebarContent}>
+      <FormLayout sidebarContent={sidebarContent} topRightContent={topRightControls}>
         {/* Mobile Stepper Support (optional, for small screens) */}
         <div className="lg:hidden mb-8">
           <VerticalStepper
@@ -430,6 +432,14 @@ export function ProjectForm() {
             onStepClick={handleStepClick}
             className="flex-row overflow-x-auto max-w-full pb-2"
           />
+        </div>
+
+        {/* Form Header */}
+        <div className="w-full max-w-3xl mx-auto mb-10 space-y-2">
+          <h1 className="text-4xl font-bold tracking-tight text-foreground">Project Application</h1>
+          <p className="text-muted-foreground text-lg">
+            Please fill out the information below to complete your project application. Fields marked with <span className="text-destructive">*</span> are required.
+          </p>
         </div>
 
         <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="w-full max-w-3xl mx-auto flex flex-col relative min-h-[500px]">
